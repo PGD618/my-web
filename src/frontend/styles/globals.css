@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* --- Tailwind 4 专用自定义工具类定义 --- */
+
+/* 彻底隐藏滚动条 */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Vercel 风格极细滚动条 */
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #27272a;
+    /* Zinc-800 */
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+    /* Zinc-700 */
+  }
+}
+
+/* --- 基础变量与全局样式 --- */
+:root {
+  --background: #09090b;
+  /* Zinc-950 */
+  --foreground: #fafafa;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  @apply antialiased;
+}
+
+/* 全局选中文本颜色 */
+::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  /* blue-500/30 */
+}
+
+/* --- 正文排版精修 --- */
+.prose ul>li::marker,
+.prose ol>li::marker {
+  color: #3f3f46;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8em;
+}
+
+.prose strong {
+  @apply font-semibold;
+  color: #ffffff !important;
+}
+
+/* --- Obsidian 增强：内部链接与图片 --- */
+
+/* 内部链接 [[Link]] */
+.prose .internal-link {
+  @apply text-blue-400 no-underline border-b border-blue-400/20 transition-all cursor-pointer;
+}
+
+.prose .internal-link:hover {
+  @apply border-blue-400;
+}
+
+/* 图片样式 */
+.prose img {
+  @apply rounded-2xl border border-white/5 my-10 shadow-2xl transition-transform duration-500;
+}
+
+.prose img:hover {
+  @apply scale-[1.01];
+}
+
+/* --- 代码块"极客化"设计 (适配 Shiki) --- */
+
+/* 1. 代码块 Pre 容器 */
+.prose pre {
+  /* 基础样式使用 @apply */
+  @apply relative my-8 overflow-x-auto rounded-2xl border border-white/5 transition-all duration-300;
+
+  /* 强制性覆盖样式独立写，不放在 @apply 中 */
+  padding: 1.5rem !important;
+  background-color: rgba(24, 24, 27, 0.6) !important;
+  /* zinc-900/60 */
+  backdrop-filter: blur(12px) !important;
+}
+
+.prose pre:hover {
+  @apply border-white/10;
+}
+
+/* 2. 代码语言标识 (尝试匹配 Shiki 生成的类名) */
+.prose pre[class*="language-"]::before {
+  content: attr(class);
+  @apply absolute top-0 right-0 px-3 py-1 text-[10px] font-mono text-zinc-500 uppercase tracking-widest bg-white/5 border-b border-l border-white/5 rounded-bl-xl z-20;
+}
+
+/* 3. Pre 内部的 Code 标签 */
+.prose pre code {
+  @apply font-mono text-[13.5px] leading-relaxed p-0;
+
+  /* 强制排版逻辑 */
+  display: grid !important;
+  min-width: 100% !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* 4. 代码块内部滚动条 */
+.prose pre::-webkit-scrollbar {
+  height: 4px;
+}
+
+.prose pre::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 10px;
+}
+
+/* 5. 行内代码块 (Inline Code) - 排除 pre 内部的 code */
+.prose :not(pre)>code {
+  @apply relative bg-zinc-800/50 text-blue-300 px-1.5 py-0.5 rounded-md text-[0.85em] font-mono border border-white/5 mx-0.5;
+}
+
+/* 6. 行高亮支持 (针对 Shiki Transformer 扩展) */
+.shiki .highlighted {
+  @apply bg-blue-500/10 border-l-2 border-l-blue-500/50 -mx-6 px-6 inline-block w-[calc(100%+3rem)];
+}
+
+/* --- 侧边栏与布局辅助 --- */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #27272a transparent;
+}
