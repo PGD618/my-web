@@ -1,7 +1,7 @@
 ﻿@import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* --- Tailwind 4 鑷畾涔夊伐鍏风被 --- */
+/* --- Tailwind 4 自定义工具类 --- */
 
 @utility scrollbar-hide {
   scrollbar-width: none;
@@ -10,13 +10,16 @@
 }
 
 @utility custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #27272a transparent;
+  scroll-behavior: smooth;
   &::-webkit-scrollbar { width: 5px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
   &::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
 }
 
-/* --- 鍩虹鍙橀噺涓庡叏灞€鏍峰紡 --- */
+/* --- 基础变量与全局样式 --- */
 :root {
   --background: #09090b;
   --foreground: #fafafa;
@@ -28,31 +31,31 @@ body {
   @apply antialiased;
 }
 
-/* 鍏ㄥ眬閫変腑鏂囨湰棰滆壊 */
+/* 全局选中文本颜色 */
 ::selection {
   background-color: rgba(59, 130, 246, 0.3);
 }
 
-/* --- 绂佹璇Е閫変腑 & 钃濇 --- */
+/* --- 禁止误选中 & 蓝框 --- */
 
-/* 浜や簰鍏冪礌绂佹鏂囨湰閫変腑 */
+/* 交互元素禁止文本选中 */
 a, button, [role="button"], nav, aside, label, svg {
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* 鍘婚櫎榧犳爣鐐瑰嚮鐨勮仛鐒﹁摑妗嗭紝淇濈暀閿洏 :focus-visible */
+/* 去除鼠标点击的聚焦蓝框，保留键盘 :focus-visible */
 *:focus:not(:focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* 绉诲姩绔偣鍑婚珮浜幓闄?*/
+/* 移动端点击高亮去除 */
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* --- 姝ｆ枃鎺掔増绮句慨 --- */
+/* --- 正文排版精修 --- */
 .prose ul>li::marker,
 .prose ol>li::marker {
   color: #3f3f46;
@@ -65,7 +68,13 @@ a, button, [role="button"], nav, aside, label, svg {
   color: #ffffff !important;
 }
 
-/* --- Obsidian 澧炲己 --- */
+/* --- 标题 autolink 去下划线 --- */
+.prose h1 a, .prose h2 a, .prose h3 a, .prose h4 a, .prose h5 a, .prose h6 a {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+/* --- Obsidian 增强 --- */
 
 .prose .internal-link {
   @apply text-blue-400 no-underline border-b border-blue-400/20 transition-all cursor-pointer;
@@ -77,7 +86,7 @@ a, button, [role="button"], nav, aside, label, svg {
 }
 .prose img:hover { @apply scale-[1.01]; }
 
-/* --- 浠ｇ爜鍧?--- */
+/* --- 代码块 --- */
 
 .prose pre {
   @apply relative my-8 overflow-x-auto rounded-2xl border border-white/5 transition-all duration-300;
@@ -111,14 +120,9 @@ a, button, [role="button"], nav, aside, label, svg {
   @apply bg-blue-500/10 border-l-2 border-l-blue-500/50 -mx-6 px-6 inline-block w-[calc(100%+3rem)];
 }
 
-/* --- 渚ц竟鏍忔粴鍔ㄦ潯 --- */
+/* --- 侧边栏滚动条 --- */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #27272a transparent;
 }
 
-/* --- 标题 autolink 去下划线 --- */
-.prose h1 a, .prose h2 a, .prose h3 a, .prose h4 a, .prose h5 a, .prose h6 a {
-  text-decoration: none !important;
-  color: inherit !important;
-}
