@@ -1,8 +1,9 @@
-import { getAllNotes } from '@/backend/notes'
+﻿import { getAllNotes } from '@/backend/notes'
 import { buildFileTree } from '@/backend/utils'
 import { GlobalSearch } from '@/frontend/components/Search'
 import { FileTree } from '@/frontend/components/FileTree'
 import ResizableSplit from '@/frontend/components/ResizableSplit'
+import { PageTransition } from '@/frontend/components/PageTransition'
 
 export default function WritingLayoutView({ children }: { children: React.ReactNode }) {
   const notes = getAllNotes()
@@ -25,7 +26,7 @@ export default function WritingLayoutView({ children }: { children: React.ReactN
       }
       right={
         <main className="h-full overflow-y-auto bg-zinc-950 custom-scrollbar">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       }
     />

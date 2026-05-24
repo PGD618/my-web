@@ -46,7 +46,7 @@ export default function HomePage() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-10 max-w-[1200px] mx-auto space-y-[6vh]"
+        className="relative z-10 max-w-300 mx-auto space-y-[6vh]"
       >
         {/* ═══ Hero ═══ */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -81,13 +81,13 @@ export default function HomePage() {
           <motion.div variants={itemVariants}>
             <Link
               href="/writing"
-              className="group relative overflow-hidden rounded-[40px] bg-blue-600 p-[3vw] text-white transition-all hover:scale-[0.98] active:scale-95 shadow-2xl shadow-blue-500/25 flex flex-col justify-between h-full min-h-[320px]"
+              className="group relative overflow-hidden rounded-[40px] bg-blue-600 p-[3vw] text-white transition-all hover:scale-[0.98] active:scale-95 shadow-2xl shadow-blue-500/25 flex flex-col justify-between h-full min-h-80"
             >
               <div className="absolute inset-0 bg-linear-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
               <div className="relative z-10 space-y-4">
                 <h2 className="text-4xl font-bold tracking-tight">我的笔记</h2>
-                <p className="text-blue-100/70 text-sm font-light leading-relaxed max-w-[200px] tracking-wide">
+                <p className="text-blue-100/70 text-sm font-light leading-relaxed max-w-50 tracking-wide">
                   探索同步自 Obsidian 的知识库，涵盖算法、面试与前端。
                 </p>
               </div>

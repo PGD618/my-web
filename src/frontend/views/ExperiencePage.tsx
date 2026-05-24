@@ -92,7 +92,7 @@ export default function ExperiencePage() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-10 max-w-[900px] mx-auto px-6 md:px-[5vw] py-[8vh] space-y-14"
+        className="relative z-10 max-w-225 mx-auto px-6 md:px-[5vw] py-[8vh] space-y-14"
       >
         {/* ═══ Header ═══ */}
         <motion.section variants={itemVariants} className="space-y-6">
@@ -114,7 +114,7 @@ export default function ExperiencePage() {
         {/* ═══ Timeline ═══ */}
         <motion.section variants={itemVariants} className="relative">
           {/* 竖线 */}
-          <div className="absolute left-[18px] md:left-[22px] top-0 bottom-0 w-px bg-zinc-800" />
+          <div className="absolute left-4.5 md:left-5.5 top-0 bottom-0 w-px bg-zinc-800" />
 
           <div className="space-y-10">
             {experiences.map((exp, i) => {
@@ -122,12 +122,12 @@ export default function ExperiencePage() {
               return (
                 <div key={i} className="relative pl-12 md:pl-14">
                   {/* 时间线节点 */}
-                  <div className={`absolute left-[10px] md:left-[14px] top-1.5 w-[18px] h-[18px] rounded-full bg-zinc-950 border-2 ${cfg.dotColor} z-10 flex items-center justify-center`}>
-                    <div className={`w-[6px] h-[6px] rounded-full ${cfg.lineColor}`} />
+                  <div className={`absolute left-2.5 md:left-3.5 top-1.5 w-4.5 h-4.5 rounded-full bg-zinc-950 border-2 ${cfg.dotColor} z-10 flex items-center justify-center`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${cfg.lineColor}`} />
                   </div>
 
                   {/* 卡片 */}
-                  <div className="group relative overflow-hidden rounded-[24px] bg-zinc-900/30 border border-white/5 backdrop-blur-sm transition-all duration-500 hover:bg-zinc-900/60 hover:border-white/10 hover:-translate-y-0.5">
+                  <div className="group relative overflow-hidden rounded-3xl bg-zinc-900/30 border border-white/5 backdrop-blur-sm transition-all duration-500 hover:bg-zinc-900/60 hover:border-white/10 hover:-translate-y-0.5">
                     {/* 顶部类型色条 */}
                     <div className={`h-1 w-full bg-linear-to-r from-transparent via-current opacity-30 ${cfg.lineColor.replace('bg-', 'text-')}`} />
 
