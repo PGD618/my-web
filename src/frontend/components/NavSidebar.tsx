@@ -1,12 +1,13 @@
-'use client'
+﻿'use client'
 import Link from 'next/link'
 import { useState } from 'react'
-import { FiHome, FiEdit3, FiLayers, FiUser } from 'react-icons/fi'
+import { FiHome, FiEdit3, FiLayers, FiUser, FiClock } from 'react-icons/fi'
 
 const navItems = [
   { href: '/',       icon: FiHome,   label: 'Home' },
   { href: '/writing', icon: FiEdit3, label: 'Blog' },
   { href: '/projects', icon: FiLayers, label: 'Projects' },
+  { href: '/experience', icon: FiClock, label: 'Experience' },
   { href: '/about',   icon: FiUser,  label: 'About' },
 ]
 
@@ -46,13 +47,16 @@ export function NavSidebar() {
     <nav className="w-[5vw] min-w-[64px] max-w-[80px] h-full border-r border-zinc-900 bg-black/20 flex flex-col items-center py-8 z-50 shrink-0">
       <div className="w-8 h-8 bg-white rounded-xl mb-12 flex items-center justify-center text-black font-black">P</div>
       <div className="flex-1 flex flex-col items-center gap-8 text-zinc-500">
-        {navItems.slice(0, 3).map((item) => (
+        {navItems.slice(0, 4).map((item) => (
           <NavIcon key={item.href} {...item} />
         ))}
       </div>
       <div className="mb-8">
-        <NavIcon {...navItems[3]} />
+        <NavIcon {...navItems[4]} />
       </div>
     </nav>
   )
 }
+
+
+

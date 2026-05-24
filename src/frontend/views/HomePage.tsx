@@ -1,7 +1,7 @@
-'use client'
+﻿'use client'
 
 import { motion, Variants } from 'framer-motion'
-import { FiZap, FiArrowRight, FiCode } from 'react-icons/fi'
+import { FiZap, FiArrowRight, FiCode, FiExternalLink } from 'react-icons/fi'
 import { SiGithub, SiGmail } from 'react-icons/si'
 import Link from 'next/link'
 
@@ -28,6 +28,10 @@ const itemVariants: Variants = {
   },
 }
 
+const featuredProjects = [
+  { name: 'Noumi Server', tag: '实习项目 · 语核科技 AI Agent 平台', color: 'text-violet-500', bg: 'from-violet-600/20 to-purple-600/10' },
+  { name: '智绘山河——AI“晋”行时', tag: '主打项目 · 国赛作品 AI 行程规划', color: 'text-emerald-500', bg: 'from-emerald-600/20 to-teal-600/10' },
+]
 export default function HomePage() {
   return (
     <div className="relative h-full overflow-y-auto overflow-x-hidden bg-zinc-950 px-6 md:px-[5vw] py-[8vh] custom-scrollbar">
@@ -44,6 +48,7 @@ export default function HomePage() {
         animate="show"
         className="relative z-10 max-w-[1200px] mx-auto space-y-[6vh]"
       >
+        {/* ═══ Hero ═══ */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div
             variants={itemVariants}
@@ -51,27 +56,28 @@ export default function HomePage() {
           >
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-400 uppercase tracking-[0.2em]">
-                <FiZap className="text-blue-400" /> 全栈开发 & 终身学习
+                <FiZap className="text-blue-400" /> 全栈开发 · 终身学习
               </div>
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5vw] font-bold tracking-tight text-white leading-[1.1] wrap-break-words">
-                大二程序员 / <br />
+                大二程序猿 / <br />
                 <span className="text-zinc-600 font-medium">独立开发者 & 思考者</span>
               </h1>
 
               <p className="text-zinc-400 text-lg font-light max-w-lg leading-relaxed tracking-wide">
-                专注于构建具有美感的全栈应用。这里是我的数字花园，记录技术、思考与成长的碎片。
+                专注于构建有美感的全栈应用。这里是我的数字花园，记录技术、思考与成长的碎片。
               </p>
 
               <div className="flex gap-6 items-center pt-4">
-                <SiGithub className="w-6 h-6 text-zinc-500 hover:text-white transition-colors cursor-pointer" />
-                <SiGmail className="w-6 h-6 text-zinc-500 hover:text-white transition-colors cursor-pointer" />
+                <a href="https://github.com/PGD618" target="_blank" rel="noopener noreferrer"><SiGithub className="w-6 h-6 text-zinc-500 hover:text-white transition-colors cursor-pointer" /></a>
+                <a href="mailto:guojinbo618@gmail.com"><SiGmail className="w-6 h-6 text-zinc-500 hover:text-white transition-colors cursor-pointer" /></a>
                 <div className="h-px w-12 bg-zinc-800" />
                 <span className="text-[10px] font-mono text-zinc-700 uppercase tracking-widest leading-none font-medium">PGD618.studio</span>
               </div>
             </div>
           </motion.div>
 
+          {/* ═══ Blog 入口卡片 ═══ */}
           <motion.div variants={itemVariants}>
             <Link
               href="/writing"
@@ -98,35 +104,48 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 relative z-10">
-          {[
-            { name: "算法可视化", tag: "CS61A", color: "text-pink-500" },
-            { name: "沉浸式播放器", tag: "React", color: "text-orange-500" },
-            { name: "个人博客系统", tag: "Next.js 15", color: "text-blue-500" },
-            { name: "面试题解库", tag: "Algorithm", color: "text-green-500" },
-          ].map((project, i) => (
-            <motion.div
-              key={i}
-              variants={itemVariants}
-              className="group aspect-square rounded-[32px] bg-zinc-900/30 border border-white/5 p-6 md:p-8 flex flex-col justify-between backdrop-blur-sm transition-all duration-500 cursor-pointer hover:bg-zinc-900/60 hover:border-white/10 hover:-translate-y-2"
+        {/* ═══ 精选项目 ═══ */}
+        <section className="space-y-5">
+          <motion.div variants={itemVariants} className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600 flex items-center gap-2">
+              <FiCode /> 精选项目
+            </h2>
+            <Link
+              href="/projects"
+              className="text-[10px] font-mono text-zinc-600 hover:text-blue-400 transition-colors uppercase tracking-[0.2em] flex items-center gap-1"
             >
-              <div className={`w-12 h-12 rounded-2xl bg-zinc-800/50 flex items-center justify-center border border-white/5 transition-all group-hover:border-current/30 ${project.color.replace('text', 'border')}`}>
-                <FiCode className={`w-5 h-5 ${project.color} opacity-40 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(var(--tw-color-current),0.5)] transition-all duration-500`} />
-              </div>
+              查看全部
+              <FiArrowRight className="w-3 h-3" />
+            </Link>
+          </motion.div>
 
-              <div>
-                <div className="font-bold text-white text-base md:text-lg tracking-wide mb-2 group-hover:text-blue-400 transition-colors">
-                  {project.name}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {featuredProjects.map((project) => (
+              <motion.div
+                key={project.name}
+                variants={itemVariants}
+                className="group relative overflow-hidden rounded-[28px] bg-zinc-900/30 border border-white/5 p-6 backdrop-blur-sm transition-all duration-500 hover:bg-zinc-900/60 hover:border-white/10 hover:-translate-y-1 cursor-pointer"
+              >
+                <div className={`h-1 w-full bg-linear-to-r ${project.bg} opacity-60 group-hover:opacity-100 transition-opacity mb-5 rounded-full`} />
+
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="font-bold text-white text-lg tracking-wide group-hover:text-blue-400 transition-colors">
+                      {project.name}
+                    </div>
+                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.15em] mt-1.5">
+                      {project.tag}
+                    </div>
+                  </div>
+                  <FiExternalLink className="w-4 h-4 text-zinc-600 group-hover:text-blue-400 transition-colors" />
                 </div>
-                <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.15em] flex items-center gap-2 font-light">
-                  <span className={`w-1 h-1 rounded-full bg-zinc-800 group-hover:animate-pulse ${project.color.replace('text', 'bg')}`} />
-                  {project.tag}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </div>
         </section>
       </motion.div>
     </div>
   )
 }
+
+
