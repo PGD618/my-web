@@ -5,7 +5,7 @@
   "scripts": {
     "predev": "git submodule update --remote --merge content",
     "dev": "concurrently -n next,velite,sync -c cyan,magenta,green \"next dev\" \"velite --watch\" \"node scripts/auto-pull.mjs\"",
-    "prebuild": "git submodule update --remote --merge content",
+    "prebuild": "git config --global url.\"https://${GITHUB_TOKEN:-}@github.com/\".insteadOf \"https://github.com/\" 2>/dev/null; git submodule update --remote --merge content 2>/dev/null; echo done",
     "build": "next build",
     "velite": "velite",
     "start": "next start",
