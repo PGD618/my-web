@@ -10,16 +10,23 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - name: Checkout repo with submodules
+      - name: Checkout main repo
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CONTENT_SYNC_PAT }}
+          persist-credentials: true
 
-      - name: Update submodule to latest
+      - name: Configure git credentials for submodules
         run: |
-          git submodule update --remote --merge content
+          git config --global url."https://x-access-token:${{ secrets.CONTENT_SYNC_PAT }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Init and update submodules
+        run: |
+          git submodule sync
+          git submodule update --init --remote --merge content
 
       - name: Commit and push if updated
         run: |
