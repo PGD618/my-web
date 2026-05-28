@@ -51,12 +51,12 @@ export default function AboutPage() {
         {/* ===== Hero ===== */}
         <motion.section variants={itemVariants} className="space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-400 uppercase tracking-[0.2em]">
-            <FiCode className="text-blue-400" /> 郭金波的使用说明 · 可放心食用版
+            <FiCode className="text-blue-400" /> PGD的使用说明 · 可放心食用版
           </div>
 
           <div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-white leading-[1.1]">
-              郭金波
+              PGD
             </h1>
             <p className="text-zinc-500 text-lg mt-3 font-light tracking-wide">
               Full-stack Developer · 全栈研发实习生 · 生活体验家
@@ -182,7 +182,7 @@ export default function AboutPage() {
           </h2>
           <div className="p-8 rounded-[32px] bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-white/5 backdrop-blur-md">
             <p className="text-zinc-400 text-sm mb-6">
-              全平台名字 &amp; 头像统一，认准 <strong className="text-zinc-200">郭金波</strong> ～
+              全平台名字 &amp; 头像统一，认准 <strong className="text-zinc-200">PGD</strong> ～
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[

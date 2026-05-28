@@ -64,10 +64,11 @@ export function GlobalSearch({ notes }: { notes: any[] }) {
                   No fragments found.
                 </Command.Empty>
 
-                <Command.Group heading="最近记录" className="px-2 pb-2 text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-600">
-                  {notes.slice(0, 10).map((note) => (
+                <Command.Group heading="所有碎片" className="px-2 pb-2 text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-600">
+                  {notes.map((note) => (
                     <Command.Item
                       key={note.slug}
+                      value={`${note.title} ${note.category} ${note.excerpt || ''}`}
                       onSelect={() => onSelect(note.slug)}
                       className="flex items-center gap-3 p-3 rounded-xl cursor-pointer aria-selected:bg-white/5 aria-selected:text-white text-zinc-400 transition-colors"
                     >
