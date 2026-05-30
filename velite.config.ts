@@ -2,7 +2,9 @@ import { defineConfig, s } from 'velite'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
 import rehypeShiki from '@shikijs/rehype'
+import { rehypeCodeMeta } from './src/backend/rehypeCodeMeta'
 
 // 辅助函数：将嵌套的 TOC 拍扁，方便前端渲染
 const flattenToc = (items: any[], depth = 2) => {
@@ -14,6 +16,51 @@ const flattenToc = (items: any[], depth = 2) => {
     }
   })
   return result
+}
+
+// 从原始 markdown 内容中提取标签
+// 支持：YAML frontmatter 的 tags/tag 字段 + 行内 #tag 语法
+const extractTags = (rawContent: string): string[] => {
+  const tags = new Set<string>()
+
+  // 1. 尝试解析 YAML frontmatter 中的 tags
+  const frontmatterMatch = rawContent.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+  if (frontmatterMatch) {
+    const yaml = frontmatterMatch[1]
+    // 匹配 tags: [tag1, tag2] 或 tags:\n  - tag1\n  - tag2
+    const tagsArrayMatch = yaml.match(/^tags?:\s*\[([^\]]+)\]/mi)
+    if (tagsArrayMatch) {
+      tagsArrayMatch[1].split(',').forEach(t => {
+        const tag = t.trim().replace(/^["']|["']$/g, '')
+        if (tag) tags.add(tag)
+      })
+    }
+    const tagsListMatch = yaml.match(/^tags?:\s*\n((?:\s*-\s*.+\n?)+)/mi)
+    if (tagsListMatch) {
+      tagsListMatch[1].split('\n').forEach(line => {
+        const match = line.match(/^\s*-\s*(.+)/)
+        if (match) {
+          const tag = match[1].trim().replace(/^["']|["']$/g, '')
+          if (tag) tags.add(tag)
+        }
+      })
+    }
+    // 单行格式: tags: tag1
+    const tagsSingleMatch = yaml.match(/^tags?:\s*([^\[\n]+)$/mi)
+    if (tagsSingleMatch && !tagsArrayMatch) {
+      const tag = tagsSingleMatch[1].trim().replace(/^["']|["']$/g, '')
+      if (tag) tags.add(tag)
+    }
+  }
+
+  // 2. 提取行内 #tag 语法（排除代码块中的 #）
+  const withoutCodeBlocks = rawContent.replace(/```[\s\S]*?```/g, '').replace(/`[^`]+`/g, '')
+  const inlineTagMatches = withoutCodeBlocks.matchAll(/(?:^|\s)#([a-zA-Z\u4e00-\u9fa5][\w\u4e00-\u9fa5/-]*)/g)
+  for (const match of inlineTagMatches) {
+    tags.add(match[1])
+  }
+
+  return Array.from(tags)
 }
 
 export default defineConfig({
@@ -100,6 +147,12 @@ export default defineConfig({
           const normalizedPath = meta.path.replace(/\\/g, '/')
           const parts = normalizedPath.split('/')
           return parts.length > 1 ? parts[0] : 'General'
+        }),
+
+        // 8. 标签提取（frontmatter + 行内 #tag）
+        tags: s.custom().transform((_, { meta }) => {
+          const rawContent = (meta as any).content || ''
+          return extractTags(rawContent)
         })
       })
     }
@@ -107,7 +160,7 @@ export default defineConfig({
 
   // 针对 s.markdown() 字段的配置
   markdown: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkGfm, remarkBreaks],
     rehypePlugins: [
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'wrap' }],
@@ -117,17 +170,19 @@ export default defineConfig({
           theme: 'github-dark-dimmed',
           langs: ['javascript', 'typescript', 'go', 'bash', 'html', 'css', 'python'],
         }
-      ]
+      ],
+      rehypeCodeMeta as any
     ]
   },
 
   // 针对 s.mdx() 字段的配置
   mdx: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkGfm, remarkBreaks],
     rehypePlugins: [
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'wrap' }],
-      [rehypeShiki as any, { theme: 'github-dark-dimmed' }] // 3. 添加到 mdx
+      [rehypeShiki as any, { theme: 'github-dark-dimmed' }],
+      rehypeCodeMeta as any
     ]
   }
 })

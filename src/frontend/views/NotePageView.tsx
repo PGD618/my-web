@@ -2,8 +2,10 @@ import { getNote, getBacklinks, getGraphData } from '@/backend/notes'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import React from 'react'
-import { FiLink, FiCornerDownRight, FiShare2 } from 'react-icons/fi'
+import { FiLink, FiCornerDownRight, FiShare2, FiHash } from 'react-icons/fi'
 import { MiniGraph } from '@/frontend/components/MiniGraph'
+import { TableOfContents } from '@/frontend/components/TableOfContents'
+import { CodeBlockEnhancer } from '@/frontend/components/CodeBlockEnhancer'
 
 export default async function NotePageView({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params
@@ -17,7 +19,8 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
 
   return (
     <div className="w-full flex justify-center py-[10vh] px-[6vw]">
-      <article className="w-full max-w-3xl">
+      <div className="w-full max-w-5xl flex gap-12">
+        <article className="w-full max-w-3xl min-w-0">
         <nav className="flex items-center gap-2 mb-12 text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500">
           <Link href="/writing" className="hover:text-zinc-200 transition-colors">
             Garden
@@ -37,7 +40,7 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
         </nav>
 
         <header className="mb-16 border-b border-zinc-900 pb-12">
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 flex-wrap">
             <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 text-[10px] font-mono uppercase tracking-[0.2em]">
               {note.category}
             </span>
@@ -51,7 +54,7 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
             {note.title}
           </h1>
 
-          <div className="flex items-center gap-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+          <div className="flex items-center gap-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest flex-wrap">
             <div className="flex flex-col">
               <span className="text-zinc-700">Modified</span>
               <span className="text-zinc-300 mt-1">{new Date(note.lastModified).toLocaleDateString()}</span>
@@ -61,6 +64,21 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
               <span className="text-zinc-300 mt-1">{note.wordCount} Words</span>
             </div>
           </div>
+
+          {note.tags && note.tags.length > 0 && (
+            <div className="flex items-center gap-2 mt-6 flex-wrap">
+              <FiHash className="text-purple-500/50 w-3 h-3" />
+              {note.tags.map((tag: string) => (
+                <Link
+                  key={tag}
+                  href={`/writing/tags/${encodeURIComponent(tag)}`}
+                  className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 text-[10px] font-mono hover:bg-purple-500/20 transition-colors"
+                >
+                  #{tag}
+                </Link>
+              ))}
+            </div>
+          )}
         </header>
 
         <div
@@ -74,6 +92,7 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
           prose-code:text-zinc-300 prose-code:bg-zinc-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none"
           dangerouslySetInnerHTML={{ __html: note.content }}
         />
+        <CodeBlockEnhancer />
 
         {backlinks.length > 0 && (
           <section className="mt-24 pt-12 border-t border-zinc-900">
@@ -121,7 +140,12 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
             End of Fragment
           </div>
         </footer>
-      </article>
+        </article>
+
+        {note.toc && note.toc.length > 0 && (
+          <TableOfContents items={note.toc} />
+        )}
+      </div>
     </div>
   )
 }
