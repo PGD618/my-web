@@ -16,6 +16,7 @@ function stripHtml(html: string): string {
 export function GlobalSearch({ notes }: { notes: Note[] }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [isMac, setIsMac] = useState(false)
   const router = useRouter()
 
   // 按最后修改时间降序排列
@@ -50,6 +51,7 @@ export function GlobalSearch({ notes }: { notes: Note[] }) {
   )
 
   useEffect(() => {
+    queueMicrotask(() => setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0))
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
@@ -87,7 +89,7 @@ export function GlobalSearch({ notes }: { notes: Note[] }) {
         <FiSearch className="w-4 h-4" />
         <span className="text-xs font-medium flex-1 text-left uppercase tracking-wider text-nowrap">搜索碎片...</span>
         <kbd className="hidden md:inline-flex h-5 items-center gap-1 rounded border border-white/10 bg-white/5 px-1.5 font-mono text-[10px] font-medium opacity-100">
-          {typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'}K
+          {isMac ? '⌘K' : 'Ctrl+K'}
         </kbd>
       </button>
 
@@ -95,7 +97,7 @@ export function GlobalSearch({ notes }: { notes: Note[] }) {
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" />
 
-          <DialogPrimitive.Content className="fixed left-[50%] top-[15vh] z-101 w-full max-w-[600px] translate-x-[-50%] outline-none animate-in fade-in zoom-in duration-200">
+          <DialogPrimitive.Content className="fixed left-[50%] top-[10vh] md:top-[15vh] z-101 w-[calc(100%-2rem)] md:w-full max-w-[600px] translate-x-[-50%] outline-none animate-in fade-in zoom-in duration-200">
             <VisuallyHidden>
               <DialogPrimitive.Title>全局搜索</DialogPrimitive.Title>
               <DialogPrimitive.Description>搜索你的笔记</DialogPrimitive.Description>
@@ -113,7 +115,7 @@ export function GlobalSearch({ notes }: { notes: Note[] }) {
                 />
               </div>
 
-              <Command.List className="max-h-[350px] overflow-y-auto p-2 scrollbar-hide">
+              <Command.List className="max-h-[50vh] md:max-h-[350px] overflow-y-auto p-2 scrollbar-hide">
                 {displayNotes.length === 0 && (
                   <div className="py-12 text-center text-sm text-zinc-500 font-mono uppercase tracking-widest leading-none">
                     No fragments found.
@@ -127,7 +129,7 @@ export function GlobalSearch({ notes }: { notes: Note[] }) {
                         key={note.slug}
                         value={note.slug}
                         onSelect={() => onSelect(note.slug)}
-                        className="flex items-center gap-3 p-3 rounded-xl cursor-pointer aria-selected:bg-white/5 aria-selected:text-white text-zinc-400 transition-colors"
+                        className="flex items-center gap-3 p-3 rounded-xl cursor-pointer aria-selected:bg-white/5 aria-selected:text-white text-zinc-400 transition-colors min-h-[44px]"
                       >
                         <FiFileText className="w-4 h-4 opacity-50 shrink-0" />
                         <div className="flex flex-col min-w-0 leading-none flex-1">
@@ -157,7 +159,7 @@ export function GlobalSearch({ notes }: { notes: Note[] }) {
                   <span>↑↓ Navigate</span>
                   <span>Enter to Open</span>
                 </div>
-                <span className="opacity-50">Click Outside or Esc to Close</span>
+                <span className="opacity-50 hidden sm:inline">Click Outside or Esc to Close</span>
               </div>
             </Command>
           </DialogPrimitive.Content>

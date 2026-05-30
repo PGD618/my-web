@@ -12,7 +12,7 @@ export default function RootLayoutView({ children }: { children: React.ReactNode
         suppressHydrationWarning
       >
         <NavSidebar />
-        <div className="flex-1 h-full relative flex flex-col min-w-0 overflow-hidden">
+        <div className="flex-1 h-full relative flex flex-col min-w-0 overflow-hidden pb-12 md:pb-0">
           {children}
         </div>
       </body>

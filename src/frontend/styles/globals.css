@@ -82,7 +82,7 @@ a, button, [role="button"], nav, aside, label, svg {
 .prose .internal-link:hover { @apply border-blue-400; }
 
 .prose img {
-  @apply rounded-2xl border border-white/5 my-10 shadow-2xl transition-transform duration-500;
+  @apply rounded-2xl border border-white/5 my-10 shadow-2xl transition-transform duration-500 max-w-full h-auto;
 }
 .prose img:hover { @apply scale-[1.01]; }
 
