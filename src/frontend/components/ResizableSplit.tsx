@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { FiMenu, FiX } from 'react-icons/fi'
 
 interface ResizableSplitProps {
@@ -26,6 +27,12 @@ export default function ResizableSplit({
   const [isMobile, setIsMobile] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const pctRef = useRef(defaultLeftPct)
+  const pathname = usePathname()
+
+  // 路由变化时自动关闭移动端侧边栏
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [pathname])
 
   // 检测视口 & 响应 resize
   useEffect(() => {
