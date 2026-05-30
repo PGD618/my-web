@@ -96,11 +96,6 @@ a, button, [role="button"], nav, aside, label, svg {
 }
 .prose pre:hover { @apply border-white/10; }
 
-.prose pre[class*="language-"]::before {
-  content: attr(class);
-  @apply absolute top-0 right-0 px-3 py-1 text-[10px] font-mono text-zinc-500 uppercase tracking-widest bg-white/5 border-b border-l border-white/5 rounded-bl-xl z-20;
-}
-
 .prose pre code {
   @apply font-mono text-[13.5px] leading-relaxed p-0;
   display: grid !important;
@@ -118,6 +113,29 @@ a, button, [role="button"], nav, aside, label, svg {
 
 .shiki .highlighted {
   @apply bg-blue-500/10 border-l-2 border-l-blue-500/50 -mx-6 px-6 inline-block w-[calc(100%+3rem)];
+}
+
+/* --- 代码块工具栏 --- */
+.code-toolbar {
+  @apply flex items-center justify-between mb-3 -mt-1;
+}
+
+.code-label {
+  @apply text-[10px] font-mono text-zinc-500 uppercase tracking-widest px-1;
+}
+
+.code-copy-btn {
+  @apply ml-auto flex items-center justify-center w-7 h-7 rounded-lg
+         text-zinc-600 hover:text-zinc-300 hover:bg-white/5
+         transition-all cursor-pointer opacity-0 group-hover:opacity-100;
+}
+
+.prose pre:hover .code-copy-btn {
+  @apply opacity-100;
+}
+
+.code-copy-btn.copied {
+  @apply text-green-400;
 }
 
 /* --- 侧边栏滚动条 --- */
