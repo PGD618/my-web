@@ -99,7 +99,7 @@ export default defineConfig({
             (_, target) => {
               const [fileName] = target.split('|')
               // 转换为标准 img 标签。Velite 会自动处理资源路径并在编译时拷贝 assets
-              return `<img src="${fileName}" alt="${fileName}" class="obsidian-image" />`
+              return `<img src="${fileName}" alt="${fileName}" class="obsidian-image" loading="lazy" decoding="async" />`
             }
           )
 

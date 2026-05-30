@@ -6,6 +6,7 @@ import { FiLink, FiCornerDownRight, FiShare2, FiHash } from 'react-icons/fi'
 import { MiniGraph } from '@/frontend/components/MiniGraph'
 import { TableOfContents } from '@/frontend/components/TableOfContents'
 import { CodeBlockEnhancer } from '@/frontend/components/CodeBlockEnhancer'
+import { ObsidianImageEnhancer } from '@/frontend/components/ObsidianImageEnhancer'
 
 export default async function NotePageView({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params
@@ -93,6 +94,7 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
           dangerouslySetInnerHTML={{ __html: note.content }}
         />
         <CodeBlockEnhancer />
+        <ObsidianImageEnhancer />
 
         {backlinks.length > 0 && (
           <section className="mt-24 pt-12 border-t border-zinc-900">
