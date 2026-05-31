@@ -8,6 +8,8 @@ export {
   getAllTags,
   getNotesByTag,
   getTagNames,
+  getPinnedNotes,
+  getNotesByCategory,
 } from './notes'
 export type { Note, NotesStats, TagInfo, GraphNode, GraphLink, GraphData } from './notes'
 export { buildFileTree } from './utils'

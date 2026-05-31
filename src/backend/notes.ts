@@ -98,6 +98,16 @@ export function getNotesByTag(tag: string): Note[] {
   return notes.filter((n: Note) => (n.tags || []).includes(tag))
 }
 
+// 获取置顶笔记
+export function getPinnedNotes(): Note[] {
+  return notes.filter((n: Note) => n.pinned)
+}
+
+// 按分类获取笔记列表
+export function getNotesByCategory(category: string): Note[] {
+  return notes.filter((n: Note) => n.category === category)
+}
+
 // 获取所有唯一的标签名
 export function getTagNames(): string[] {
   return getAllTags().map((t) => t.name)
