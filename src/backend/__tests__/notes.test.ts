@@ -17,6 +17,8 @@ import {
   getAllTags,
   getNotesByTag,
   getTagNames,
+  getPinnedNotes,
+  getNotesByCategory,
 } from '../notes'
 
 describe('getAllNotes', () => {
@@ -195,5 +197,32 @@ describe('getTagNames', () => {
     expect(names).toHaveLength(8)
     expect(names).toContain('frontend')
     expect(names).toContain('react')
+  })
+})
+
+describe('getPinnedNotes', () => {
+  it('返回所有置顶笔记', () => {
+    const pinned = getPinnedNotes()
+    expect(pinned).toHaveLength(1)
+    expect(pinned[0].title).toBe('React Hooks')
+  })
+
+  it('只返回 pinned 为 true 的笔记', () => {
+    const pinned = getPinnedNotes()
+    expect(pinned.every(n => n.pinned)).toBe(true)
+  })
+})
+
+describe('getNotesByCategory', () => {
+  it('返回指定分类的笔记', () => {
+    const result = getNotesByCategory('frontend')
+    expect(result).toHaveLength(2)
+    const titles = result.map(n => n.title)
+    expect(titles).toContain('React Hooks')
+    expect(titles).toContain('TypeScript 基础')
+  })
+
+  it('不存在的分类返回空数组', () => {
+    expect(getNotesByCategory('nonexistent')).toHaveLength(0)
   })
 })

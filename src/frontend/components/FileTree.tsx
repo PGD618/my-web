@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { FiChevronRight, FiFolder, FiFileText } from 'react-icons/fi'
 import { usePathname } from 'next/navigation'
 import type { FileTreeNode } from '@/backend/utils'
+import { getCategoryMeta } from '@/backend/utils'
 
 function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
   const [show, setShow] = useState(false)
@@ -29,7 +30,8 @@ function TreeNode({ node, level }: { node: FileTreeNode; level: number }) {
   const [isOpen, setIsOpen] = useState(true)
   const pathname = usePathname()
   const isActive = pathname === `/writing/${node.slug ?? ''}`
-  const displayName = node.name
+  const categoryIcon = level === 0 && node.isFolder ? getCategoryMeta(node.name).icon : null
+  const displayName = categoryIcon ? `${categoryIcon} ${node.name}` : node.name
 
   if (node.isFolder) {
     return (

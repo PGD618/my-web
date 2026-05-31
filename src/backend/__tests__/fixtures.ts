@@ -12,6 +12,7 @@ export interface MockNote {
   category: string
   tags: string[]
   plainContent: string
+  pinned: boolean
 }
 
 export const mockNotes: MockNote[] = [
@@ -27,6 +28,7 @@ export const mockNotes: MockNote[] = [
     category: 'frontend',
     tags: ['react', 'hooks', 'frontend'],
     plainContent: 'React Hooks 是 React 16.8 引入的新特性。',
+    pinned: true,
   },
   {
     title: 'TypeScript 基础',
@@ -40,6 +42,7 @@ export const mockNotes: MockNote[] = [
     category: 'frontend',
     tags: ['typescript', 'frontend'],
     plainContent: 'TypeScript 是 JavaScript 的超集。',
+    pinned: false,
   },
   {
     title: 'Go 并发编程',
@@ -53,6 +56,7 @@ export const mockNotes: MockNote[] = [
     category: 'backend',
     tags: ['go', 'concurrency'],
     plainContent: 'Go 语言的并发模型基于 goroutine。',
+    pinned: false,
   },
   {
     title: 'Docker 入门',
@@ -66,6 +70,7 @@ export const mockNotes: MockNote[] = [
     category: 'devops',
     tags: ['docker', 'devops'],
     plainContent: 'Docker 是一种容器化技术。',
+    pinned: false,
   },
   {
     title: '无标签笔记',
@@ -79,5 +84,6 @@ export const mockNotes: MockNote[] = [
     category: 'misc',
     tags: [],
     plainContent: '这是一篇没有标签的笔记。',
+    pinned: false,
   },
 ]

@@ -65,7 +65,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-zinc-400 text-lg font-light max-w-lg leading-relaxed tracking-wide">
-                专注于构建有美感的全栈应用。这里是我的数字花园，记录技术、思考与成长的碎片。
+                专注于构建有美感的全栈应用。这里是我的数字花园，记录技术、行业思考与生活感悟的碎片。
               </p>
 
               <div className="flex gap-6 items-center pt-4">
@@ -86,9 +86,9 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-linear-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
               <div className="relative z-10 space-y-4">
-                <h2 className="text-4xl font-bold tracking-tight">我的笔记</h2>
+                <h2 className="text-4xl font-bold tracking-tight">我的碎片</h2>
                 <p className="text-blue-100/70 text-sm font-light leading-relaxed max-w-50 tracking-wide">
-                  探索同步自 Obsidian 的知识库，涵盖算法、面试与前端。
+                  技术沉淀、行业思考、生活手记 —— 同步自 Obsidian 的思想空间。
                 </p>
               </div>
 
