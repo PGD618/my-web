@@ -180,7 +180,10 @@ export default defineConfig({
         plainContent: s.custom().transform((_, { meta }) => {
           const rawContent = (meta as any).content || ''
           return stripMarkdown(rawContent)
-        })
+        }),
+
+        // 10. 置顶标记（frontmatter 中 pinned: true）
+        pinned: s.boolean().optional().default(false)
       })
     }
   },
