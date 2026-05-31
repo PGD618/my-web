@@ -10,6 +10,8 @@
     "velite": "velite",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "sync:obsidian": "git submodule update --remote --merge content"
   },
   "dependencies": {
@@ -45,6 +47,7 @@
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "velite": "^0.3.1"
+    "velite": "^0.3.1",
+    "vitest": "^4.1.7"
   }
 }

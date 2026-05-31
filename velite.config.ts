@@ -63,6 +63,27 @@ const extractTags = (rawContent: string): string[] => {
   return Array.from(tags)
 }
 
+// 从 markdown 原文中提取纯文本，用于构建搜索索引
+const stripMarkdown = (raw: string): string => {
+  return raw
+    .replace(/```[\s\S]*?```/g, '')       // 代码块
+    .replace(/`[^`]*`/g, '')              // 行内代码
+    .replace(/<[^>]*>/g, '')              // HTML 标签
+    .replace(/!\[\[([^\]|]*)(?:\|[^\]]*)?\]\]/g, '$1')  // ![[image|size]] → image
+    .replace(/\[\[([^\]|]*)(?:\|([^\]]*))?\]\]/g, '$2')  // [[link|alias]] → alias
+    .replace(/^#{1,6}\s+/gm, '')          // 标题标记
+    .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')             // 粗体/斜体
+    .replace(/_{1,3}([^_]+)_{1,3}/g, '$1')               // 下划线
+    .replace(/~~([^~]+)~~/g, '$1')        // 删除线
+    .replace(/^\s*[-*+]\s+/gm, '')        // 无序列表
+    .replace(/^\s*\d+\.\s+/gm, '')        // 有序列表
+    .replace(/^\s*>\s?/gm, '')            // 引用块
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')            // ![alt](url)
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')             // [text](url)
+    .replace(/\n{2,}/g, '\n')
+    .trim()
+}
+
 export default defineConfig({
   // 根目录指向子模块中的 web 文件夹
   root: 'content/web',
@@ -153,6 +174,12 @@ export default defineConfig({
         tags: s.custom().transform((_, { meta }) => {
           const rawContent = (meta as any).content || ''
           return extractTags(rawContent)
+        }),
+
+        // 9. 纯文本内容（构建时预计算，用于全文搜索索引）
+        plainContent: s.custom().transform((_, { meta }) => {
+          const rawContent = (meta as any).content || ''
+          return stripMarkdown(rawContent)
         })
       })
     }
