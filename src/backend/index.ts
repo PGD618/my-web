@@ -12,6 +12,6 @@ export {
   getNotesByCategory,
 } from './notes'
 export type { Note, NotesStats, TagInfo, GraphNode, GraphLink, GraphData } from './notes'
-export { buildFileTree } from './utils'
-export type { FileTreeNode } from './utils'
+export { buildFileTree, CATEGORY_META, getCategoryMeta } from './utils'
+export type { FileTreeNode, CategoryMeta } from './utils'
 export { getSnippet } from './searchUtils'
