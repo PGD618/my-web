@@ -26,11 +26,12 @@ function Tooltip({ label, children }: { label: string; children: React.ReactNode
   )
 }
 
-function TreeNode({ node, level }: { node: FileTreeNode; level: number }) {
+function TreeNode({ node, level, hideRoot }: { node: FileTreeNode; level: number; hideRoot?: boolean }) {
   const [isOpen, setIsOpen] = useState(true)
   const pathname = usePathname()
   const isActive = pathname === `/writing/${node.slug ?? ''}`
-  const categoryIcon = level === 0 && node.isFolder ? getCategoryMeta(node.name).icon : null
+  const showCategoryIcon = !hideRoot && level === 0 && node.isFolder
+  const categoryIcon = showCategoryIcon ? getCategoryMeta(node.name).icon : null
   const displayName = categoryIcon ? `${categoryIcon} ${node.name}` : node.name
 
   if (node.isFolder) {
@@ -51,7 +52,7 @@ function TreeNode({ node, level }: { node: FileTreeNode; level: number }) {
         {isOpen && (
           <div className="ml-3.5 pl-2 border-l border-white/3">
             {Object.values(node.children).map((child) => (
-              <TreeNode key={child.name} node={child} level={level + 1} />
+              <TreeNode key={child.name} node={child} level={level + 1} hideRoot={hideRoot} />
             ))}
           </div>
         )}
@@ -82,12 +83,18 @@ function TreeNode({ node, level }: { node: FileTreeNode; level: number }) {
   )
 }
 
-export function FileTree({ tree }: { tree: Record<string, FileTreeNode> }) {
+export function FileTree({ tree, hideRoot }: { tree: Record<string, FileTreeNode>; hideRoot?: boolean }) {
   return (
     <div className="h-full overflow-y-auto py-4 px-2 scrollbar-hide">
-      {Object.values(tree).map((node) => (
-        <TreeNode key={node.name} node={node} level={0} />
-      ))}
+      {Object.values(tree).map((node) => {
+        // hideRoot: 跳过分类根文件夹，直接渲染其子节点作为顶层
+        if (hideRoot && node.isFolder) {
+          return Object.values(node.children).map((child) => (
+            <TreeNode key={child.name} node={child} level={0} />
+          ))
+        }
+        return <TreeNode key={node.name} node={node} level={0} />
+      })}
     </div>
   )
 }

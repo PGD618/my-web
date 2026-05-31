@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { defineConfig, s } from 'velite'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeSlug from 'rehype-slug'
@@ -163,10 +164,10 @@ export default defineConfig({
           return Array.from(matches).map(m => m[1].split('|')[0])
         }),
 
-        // 7. 分类提取
+        // 7. 分类提取（使用 path.relative 从绝对路径中取相对路径，兼容 Windows）
         category: s.custom().transform((_, { meta }) => {
-          const normalizedPath = meta.path.replace(/\\/g, '/')
-          const parts = normalizedPath.split('/')
+          const relative = path.relative('content/web', meta.path).replace(/\\/g, '/')
+          const parts = relative.split('/')
           return parts.length > 1 ? parts[0] : 'General'
         }),
 
