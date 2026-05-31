@@ -1,5 +1,5 @@
-import { getNote, getBacklinks, getGraphData } from '@/backend/notes'
-import { notFound } from 'next/navigation'
+import type { Note } from '@/backend/notes'
+import type { GraphData } from '@/backend/notes'
 import Link from 'next/link'
 import React from 'react'
 import { FiLink, FiCornerDownRight, FiShare2, FiHash } from 'react-icons/fi'
@@ -8,16 +8,14 @@ import { TableOfContents } from '@/frontend/components/TableOfContents'
 import { CodeBlockEnhancer } from '@/frontend/components/CodeBlockEnhancer'
 import { ObsidianImageEnhancer } from '@/frontend/components/ObsidianImageEnhancer'
 
-export default async function NotePageView({ params }: { params: Promise<{ slug: string[] }> }) {
-  const { slug } = await params
-  const currentPath = decodeURIComponent(slug.join('/'))
-  const note = getNote(currentPath)
+interface NotePageViewProps {
+  note: Note
+  slug: string[]
+  backlinks: Note[]
+  graphData: GraphData
+}
 
-  if (!note) notFound()
-
-  const backlinks = getBacklinks(note)
-  const graphData = getGraphData(note)
-
+export default function NotePageView({ note, slug, backlinks, graphData }: NotePageViewProps) {
   return (
     <div className="w-full flex justify-center py-[10vh] px-[6vw]">
       <div className="w-full max-w-5xl flex gap-12">
@@ -91,7 +89,7 @@ export default async function NotePageView({ params }: { params: Promise<{ slug:
           prose-strong:text-zinc-100 prose-strong:font-semibold
           prose-blockquote:border-l-2 prose-blockquote:border-zinc-800 prose-blockquote:italic prose-blockquote:text-zinc-500
           prose-code:text-zinc-300 prose-code:bg-zinc-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none"
-          dangerouslySetInnerHTML={{ __html: note.content }}
+          dangerouslySetInnerHTML={{ __html: note.content || '<p class="text-zinc-600 italic">（无内容）</p>' }}
         />
         <CodeBlockEnhancer />
         <ObsidianImageEnhancer />
