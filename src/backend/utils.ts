@@ -1,10 +1,17 @@
-export function buildFileTree(notes: any[]) {
-  const tree: any = {}
+export interface FileTreeNode {
+  name: string
+  isFolder: boolean
+  children: Record<string, FileTreeNode>
+  slug: string | null
+}
+
+export function buildFileTree(notes: { slug: string }[]): Record<string, FileTreeNode> {
+  const tree: Record<string, FileTreeNode> = {}
   notes.forEach((note) => {
     const parts = note.slug.replace(/\\/g, '/').split('/')
     let current = tree
 
-    parts.forEach((part: string, index: number) => {
+    parts.forEach((part, index) => {
       if (!current[part]) {
         current[part] = {
           name: part,

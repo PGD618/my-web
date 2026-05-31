@@ -28,13 +28,33 @@ export function getBacklinks(note: Note): Note[] {
   )
 }
 
-export function getGraphData(note: Note): {
-  nodes: { id: string }[]
-  links: { source: string; target: string }[]
-} {
+export interface GraphNode {
+  id: string
+  slug: string
+}
+
+export interface GraphLink {
+  source: string
+  target: string
+}
+
+export interface GraphData {
+  nodes: GraphNode[]
+  links: GraphLink[]
+}
+
+export function getGraphData(note: Note): GraphData {
   const outboundLinks = note.outboundLinks || []
+  const slugMap = new Map<string, string>()
+  notes.forEach((n: Note) => {
+    slugMap.set(n.title, n.slug)
+  })
+
   return {
-    nodes: [{ id: note.title }, ...outboundLinks.map((l: string) => ({ id: l }))],
+    nodes: [
+      { id: note.title, slug: note.slug },
+      ...outboundLinks.map((l: string) => ({ id: l, slug: slugMap.get(l) || l })),
+    ],
     links: outboundLinks.map((l: string) => ({ source: note.title, target: l })),
   }
 }
