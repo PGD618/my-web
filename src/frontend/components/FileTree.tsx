@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { FiChevronRight, FiFolder, FiFileText } from 'react-icons/fi'
 import { usePathname } from 'next/navigation'
+import type { FileTreeNode } from '@/backend/utils'
 
 function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
   const [show, setShow] = useState(false)
@@ -24,10 +25,10 @@ function Tooltip({ label, children }: { label: string; children: React.ReactNode
   )
 }
 
-function TreeNode({ node, level }: { node: any; level: number }) {
+function TreeNode({ node, level }: { node: FileTreeNode; level: number }) {
   const [isOpen, setIsOpen] = useState(true)
   const pathname = usePathname()
-  const isActive = pathname === `/writing/${node.slug}`
+  const isActive = pathname === `/writing/${node.slug ?? ''}`
   const displayName = node.name
 
   if (node.isFolder) {
@@ -47,7 +48,7 @@ function TreeNode({ node, level }: { node: any; level: number }) {
 
         {isOpen && (
           <div className="ml-3.5 pl-2 border-l border-white/3">
-            {Object.values(node.children).map((child: any) => (
+            {Object.values(node.children).map((child) => (
               <TreeNode key={child.name} node={child} level={level + 1} />
             ))}
           </div>
@@ -57,9 +58,9 @@ function TreeNode({ node, level }: { node: any; level: number }) {
   }
 
   return (
-    <Tooltip label={node.slug}>
+    <Tooltip label={node.slug ?? node.name}>
       <Link
-        href={`/writing/${node.slug}`}
+        href={`/writing/${node.slug ?? ''}`}
         className={`
           flex items-center gap-2 py-1.5 px-3 my-0.5 rounded-md transition-all duration-300
           group relative overflow-hidden
@@ -79,10 +80,10 @@ function TreeNode({ node, level }: { node: any; level: number }) {
   )
 }
 
-export function FileTree({ tree }: { tree: any }) {
+export function FileTree({ tree }: { tree: Record<string, FileTreeNode> }) {
   return (
     <div className="h-full overflow-y-auto py-4 px-2 scrollbar-hide">
-      {Object.values(tree).map((node: any) => (
+      {Object.values(tree).map((node) => (
         <TreeNode key={node.name} node={node} level={0} />
       ))}
     </div>

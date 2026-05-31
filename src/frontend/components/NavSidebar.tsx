@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { FiHome, FiEdit3, FiLayers, FiUser, FiClock } from 'react-icons/fi'
+import type { IconType } from 'react-icons'
 
 const navItems = [
   { href: '/',       icon: FiHome,   label: 'Home' },
@@ -12,7 +13,7 @@ const navItems = [
   { href: '/about',   icon: FiUser,  label: 'About' },
 ]
 
-function NavIcon({ href, icon: Icon, label }: { href: string; icon: any; label: string }) {
+function NavIcon({ href, icon: Icon, label }: { href: string; icon: IconType; label: string }) {
   const [show, setShow] = useState(false)
 
   return (
@@ -42,7 +43,7 @@ function NavIcon({ href, icon: Icon, label }: { href: string; icon: any; label: 
   )
 }
 
-function MobileNavItem({ href, icon: Icon, label, active }: { href: string; icon: any; label: string; active: boolean }) {
+function MobileNavItem({ href, icon: Icon, label, active }: { href: string; icon: IconType; label: string; active: boolean }) {
   return (
     <Link
       href={href}
