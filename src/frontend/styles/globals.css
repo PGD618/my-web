@@ -138,6 +138,44 @@ a, button, [role="button"], nav, aside, label, svg {
   @apply text-green-400;
 }
 
+/* --- Sheet 面板动画 --- */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes sheet-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes sheet-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+[data-state="open"].sheet-overlay {
+  animation: fade-in 0.3s ease forwards;
+}
+
+[data-state="closed"].sheet-overlay {
+  animation: fade-out 0.3s ease forwards;
+}
+
+[data-state="open"].sheet-content {
+  animation: sheet-in 0.3s ease-out forwards;
+}
+
+[data-state="closed"].sheet-content {
+  animation: sheet-out 0.3s ease-out forwards;
+}
+
 /* --- 侧边栏滚动条 --- */
 .custom-scrollbar {
   scrollbar-width: thin;
