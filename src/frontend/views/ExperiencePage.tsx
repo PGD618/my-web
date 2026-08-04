@@ -30,7 +30,20 @@ interface Experience {
 
 const experiences: Experience[] = [
   {
-    period: '2026.05 · 至今',
+    period: '2026.07 · 至今',
+    role: 'Workflow 开发实习生',
+    org: '万境千寻（北京）科技有限公司',
+    orgDesc: '实习中 · 内容待补充',
+    description: '正在参与公司产品的前端研发工作，持续学习与成长中。',
+    highlights: [
+      '实习进行中，详情待补充',
+    ],
+    tags: ['实习中'],
+    icon: FiBriefcase,
+    type: 'work',
+  },
+  {
+    period: '2026.03 · 2026.07',
     role: '全栈研发实习生',
     org: '语核（上海）科技有限公司',
     orgDesc: 'Noumi Server · AI Agent 平台',

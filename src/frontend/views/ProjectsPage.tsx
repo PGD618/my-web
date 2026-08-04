@@ -66,6 +66,27 @@ const projects: Project[] = [
     },
   },
   {
+    title: '万境千寻 · 实习项目',
+    internship: true,
+    subtitle: 'Workflow 开发 · 万境千寻（北京）',
+    description: '实习进行中，项目详情待补充。',
+    tags: [],
+    accent: 'text-sky-500',
+    gradient: 'from-sky-600/20 to-cyan-600/10',
+    links: [
+      { label: 'Company', url: 'https://www.spirit-ai.com/', icon: FiBriefcase },
+    ],
+    year: '2026.07——至今',
+    detail: {
+      background: '待补充。',
+      role: '待补充。',
+      highlights: [
+        '待补充',
+      ],
+      learnings: '待补充。',
+    },
+  },
+  {
     title: 'Noumi Server',
     internship: true,
     subtitle: 'AI Agent 平台 · 语核科技',
@@ -77,7 +98,7 @@ const projects: Project[] = [
       { label: 'Website', url: 'https://noumi.ai/', icon: FiExternalLink },
       { label: 'Company', url: 'https://langcore.cn/', icon: FiBriefcase },
     ],
-    year: '2026.05——至今',
+    year: '2026.03——2026.07',
     detail: {
       background: 'Langhub 是语核科技基于已验证的 Agentic RAG 技术推出的自学习 AI 数字员工平台，旨在攻克传统 RAG 在复杂业务场景中的能力瓶颈——让 AI 真正吃透企业私有知识，像领域专家一样思考并完成复杂工作。',
       role: '参与 IM 集成模块的全栈开发与 AI Proxy 代理层的优化维护。作为初创团队核心研发，深度介入产品设计与技术实现的全流程，从前端交互到后端调度均有实际产出。',
@@ -126,7 +147,7 @@ const projects: Project[] = [
     ],
     year: '2026.03——2026.03',
     detail: {
-      background: '自己攒了不少 FLAC 高音质音乐却找不到一款 UI 好看的本地播放器，恰逢网安比赛要求全程内网不能联网，于是比赛前一晚用 4 小时借助 AI 完成了整个项目的开发。名字取自"金丝楠"谐音"金思楠"——自己名字里的"金"和女朋友名字里的"楠"，也是未来个人 IP 的雏形。',
+      background: '自己攒了不少 FLAC 高音质音乐却找不到一款 UI 好看的本地播放器，恰逢网安比赛要求全程内网不能联网，于是比赛前一晚用 4 小时借助 AI 完成了整个项目的开发。名字取自"金丝楠"谐音"金思楠"——藏着一个"金"字，也藏着一个对某人的念想，是未来个人 IP 的雏形。',
       role: '独立开发，全程由 AI 辅助完成，包括 Rust 后端与 React 前端。',
       highlights: [
         '音频元数据解析：Rust lofty 库读取本地音乐文件的封面、歌手、歌词等元数据',
@@ -385,14 +406,16 @@ export default function ProjectsPage() {
 
 
         {/* ═══ 实习项目 ═══ */}
-        {projects.filter(p => p.internship).map((p) => (
-          <motion.section key={p.title} variants={itemVariants}>
-            <div className="space-y-4 mb-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600 flex items-center gap-2">
-                <FiBriefcase /> 实习项目
-              </h2>
-            </div>
+        <motion.section variants={itemVariants}>
+          <div className="space-y-4 mb-6">
+            <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600 flex items-center gap-2">
+              <FiBriefcase /> 实习项目
+            </h2>
+          </div>
+          <div className="space-y-4">
+          {projects.filter(p => p.internship).map((p) => (
             <div
+              key={p.title}
               onClick={() => handleCardClick(p)}
               className="group relative overflow-hidden rounded-4xl bg-zinc-900/40 border border-violet-500/15 backdrop-blur-sm transition-all duration-500 hover:bg-zinc-900/70 hover:border-violet-500/30 hover:-translate-y-1 cursor-pointer"
             >
@@ -435,8 +458,9 @@ export default function ProjectsPage() {
                 </div>
               </div>
             </div>
-          </motion.section>
-        ))}
+          ))}
+          </div>
+        </motion.section>
 
         {/* ═══ 分隔线 ═══ */}
         <motion.div variants={itemVariants} className="relative py-4">
