@@ -39,7 +39,11 @@ CATEGORIES.forEach(c => {
 })
 
 export function categorySlugToName(slug: string): string | null {
-  return SLUG_TO_NAME[slug] ?? null
+  // 英文 slug → 中文名（如 "tech" → "技术沉淀"）
+  if (SLUG_TO_NAME[slug]) return SLUG_TO_NAME[slug]
+  // 中文分类名本身也合法（URL 解码后 slug[0] 直接是 "技术沉淀"）
+  if (NAME_TO_SLUG[slug]) return slug
+  return null
 }
 
 export function categoryNameToSlug(name: string): string | null {

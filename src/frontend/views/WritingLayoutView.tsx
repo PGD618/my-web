@@ -21,7 +21,8 @@ export default function WritingLayoutView({ children }: { children: React.ReactN
     )
   }
 
-  const firstSegment = slug[0]
+  // useParams() 返回的是 URL 编码后的值，需要手动 decode（与服务端 page.tsx 行为一致）
+  const firstSegment = decodeURIComponent(slug[0])
 
   // 仅当第一段是已知分类 slug 时，才启用分类过滤
   const activeCategoryName = categorySlugToName(firstSegment)
