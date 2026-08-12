@@ -10,7 +10,10 @@ export default function NoteError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('[NoteError] note page rendering error:', error)
+    // 生产环境下错误已由 Next.js 自动收集，这里仅在开发模式记录详细信息
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[NoteError] note page rendering error:', error)
+    }
   }, [error])
 
   return (
