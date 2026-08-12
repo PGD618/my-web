@@ -28,6 +28,13 @@ export default function WritingPortalPage() {
           <p className="text-zinc-500 text-lg max-w-xl mx-auto">
             每个分区是我世界的一个切面。选一个方向，专注了解。
           </p>
+          <Link
+            href="/writing/all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-mono uppercase tracking-wider hover:bg-cyan-400/20 hover:border-cyan-400/30 transition-all"
+          >
+            <FiArrowRight className="w-4 h-4" />
+            查看全部笔记
+          </Link>
         </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
