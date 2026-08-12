@@ -42,7 +42,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       alternates: { canonical: url },
     }
   } catch (err) {
-    console.error('[generateMetadata] error:', err)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[generateMetadata] error:', err)
+    }
     return {}
   }
 }
@@ -65,11 +67,8 @@ export default async function WritingCatchAllPage({
   const note = getNote(notePath)
 
   if (!note) {
-    console.warn('[WritingCatchAllPage] note not found:', { notePath, slug })
     notFound()
   }
-
-  console.log('[WritingCatchAllPage] rendering note:', { notePath, title: note.title, contentLen: note.content?.length })
 
   const backlinks = getBacklinks(note)
   const graphData = getGraphData(note)

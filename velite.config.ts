@@ -147,10 +147,22 @@ export default defineConfig({
           return stats?.mtime ? new Date(stats.mtime).toISOString() : new Date().toISOString()
         }),
 
-        // 4. 字数统计
+        // 4. 字数统计（中文按字符计数，英文按空格分词，兼容中英混排）
         wordCount: s.custom().transform((_, { meta }) => {
           const content = (meta as any).content as string || ''
-          return content.split(/\s+/g).length || 0
+          // 去除代码块、行内代码与 HTML 标签，避免污染字数
+          const text = content
+            .replace(/```[\s\S]*?```/g, '')
+            .replace(/`[^`]*`/g, '')
+            .replace(/<[^>]*>/g, '')
+          // 中日韩统一表意文字，逐字计数
+          const cjkCount = (text.match(/[一-龥぀-ヿ]/g) || []).length
+          // 剩余的非 CJK 部分按空格分词（英文单词、数字等）
+          const nonCjkWords = text
+            .replace(/[一-龥぀-ヿ]/g, ' ')
+            .split(/\s+/)
+            .filter(Boolean).length
+          return cjkCount + nonCjkWords
         }),
 
         // 5. 目录处理
