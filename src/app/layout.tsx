@@ -25,6 +25,13 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true },
   },
+  alternates: {
+    types: {
+      'application/rss+xml': [
+        { url: '/feed.xml', title: 'PGD618 Digital Garden RSS Feed' }
+      ],
+    },
+  },
 };
 
 export { default } from "@/frontend/views/RootLayoutView";
