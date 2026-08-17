@@ -1,13 +1,10 @@
 name: Generate Vectors
 
 on:
-  push:
-    branches:
-      - master
-      - dev
-      - feat/ai-integration
-    paths:
-      - 'content/**'
+  # 每周日凌晨 2:00（北京时间）自动更新向量
+  schedule:
+    - cron: '0 18 * * 6'  # UTC 周六 18:00 = 北京时间周日 02:00
+  # 支持手动触发（需要立即更新时使用）
   workflow_dispatch:
 
 jobs:
