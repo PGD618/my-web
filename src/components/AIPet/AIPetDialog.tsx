@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Send, Loader2 } from 'lucide-react'
+import { FiX, FiSend, FiLoader } from 'react-icons/fi'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -131,7 +131,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
             onClick={onClose}
             className="text-zinc-400 hover:text-white transition-colors"
           >
-            <X className="w-5 h-5" />
+            <FiX className="w-5 h-5" />
           </button>
         </div>
 
@@ -164,7 +164,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-zinc-800 px-4 py-2 rounded-lg flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                <FiLoader className="w-4 h-4 animate-spin text-cyan-400" />
                 <span className="text-zinc-400 text-sm">思考中...</span>
               </div>
             </div>
@@ -190,7 +190,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
               disabled={!input.trim() || isLoading}
               className="px-6 bg-cyan-500 hover:bg-cyan-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-lg transition-colors flex items-center justify-center"
             >
-              <Send className="w-5 h-5" />
+              <FiSend className="w-5 h-5" />
             </button>
           </div>
           <p className="text-xs text-zinc-500 mt-2">
