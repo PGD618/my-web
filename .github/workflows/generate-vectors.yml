@@ -1,0 +1,59 @@
+name: Generate Vectors
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'content/**'
+  workflow_dispatch:
+
+jobs:
+  build-vectors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install gray-matter
+
+      - name: Generate vectors
+        env:
+          ALIBABA_EMBEDDING_API_KEY: ${{ secrets.ALIBABA_EMBEDDING_API_KEY }}
+        run: node scripts/build-vectors.mjs
+
+      - name: Upload to R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          # 安装 AWS CLI (Cloudflare R2 兼容 S3 API)
+          pip install awscli
+
+          # 配置 AWS CLI
+          aws configure set aws_access_key_id $R2_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $R2_SECRET_ACCESS_KEY
+          aws configure set default.region auto
+
+          # 上传到 R2
+          aws s3 sync ./vectors s3://$R2_BUCKET_NAME/vectors \
+            --endpoint-url https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com \
+            --exclude "*" \
+            --include "*.json"
+
+      - name: Summary
+        run: |
+          echo "✅ Vectors generated and uploaded to R2"
+          echo "📊 Files processed: $(cat vectors/vectors.json | grep -o '"id"' | wc -l)"
