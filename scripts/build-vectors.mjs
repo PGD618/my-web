@@ -45,13 +45,19 @@ class EmbeddingClient {
         },
         body: JSON.stringify({
           model: this.model,
-          input: { texts: [text] },
+          input: {
+            texts: [text]
+          },
+          parameters: {
+            text_type: 'document'
+          }
         }),
       }
     )
 
     if (!response.ok) {
-      throw new Error(`Embedding API error: ${response.status}`)
+      const errorText = await response.text()
+      throw new Error(`Embedding API error: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
@@ -76,13 +82,20 @@ class EmbeddingClient {
           },
           body: JSON.stringify({
             model: this.model,
-            input: { texts: batch },
+            input: {
+              texts: batch
+            },
+            parameters: {
+              text_type: 'document'
+            }
           }),
         }
       )
 
       if (!response.ok) {
-        throw new Error(`Embedding API error: ${response.status}`)
+        const errorText = await response.text()
+        console.error(`Batch ${i / batchSize + 1} failed:`, errorText)
+        throw new Error(`Embedding API error: ${response.status} - ${errorText}`)
       }
 
       const data = await response.json()
