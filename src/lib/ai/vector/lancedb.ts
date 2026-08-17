@@ -2,13 +2,13 @@ import type { SearchResult } from '../types'
 
 /**
  * LanceDB 客户端 - Serverless 模式
- * 通过 HTTP Range Requests 远程访问存储在 R2 的向量数据库
+ * 通过 HTTP Range Requests 远程访问存储在腾讯云 COS 的向量数据库
  */
 export class LanceDBClient {
   private baseURL: string
 
   constructor(baseURL: string) {
-    // R2 公开访问 URL，例如: https://pub-xxxxx.r2.dev/vectors
+    // 腾讯云 COS 公开访问 URL，例如: https://bucket.cos.ap-beijing.myqcloud.com/vectors
     this.baseURL = baseURL.replace(/\/$/, '')
   }
 
@@ -71,10 +71,10 @@ export class LanceDBClient {
  * 从环境变量创建客户端
  */
 export function createLanceDBClient(): LanceDBClient {
-  const baseURL = process.env.R2_PUBLIC_URL
+  const baseURL = process.env.COS_PUBLIC_URL
 
   if (!baseURL) {
-    throw new Error('Missing R2_PUBLIC_URL environment variable')
+    throw new Error('Missing COS_PUBLIC_URL environment variable')
   }
 
   return new LanceDBClient(baseURL)

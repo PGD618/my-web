@@ -32,28 +32,23 @@ jobs:
           ALIBABA_EMBEDDING_API_KEY: ${{ secrets.ALIBABA_EMBEDDING_API_KEY }}
         run: node scripts/build-vectors.mjs
 
-      - name: Upload to R2
+      - name: Upload to COS
         env:
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+          COS_BUCKET: ${{ secrets.COS_BUCKET }}
+          COS_REGION: ${{ secrets.COS_REGION }}
         run: |
-          # 安装 AWS CLI (Cloudflare R2 兼容 S3 API)
-          pip install awscli
+          # 安装 COS CLI
+          pip install coscmd
 
-          # 配置 AWS CLI
-          aws configure set aws_access_key_id $R2_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $R2_SECRET_ACCESS_KEY
-          aws configure set default.region auto
+          # 配置 COS CLI
+          coscmd config -a $COS_SECRET_ID -s $COS_SECRET_KEY -b $COS_BUCKET -r $COS_REGION
 
-          # 上传到 R2
-          aws s3 sync ./vectors s3://$R2_BUCKET_NAME/vectors \
-            --endpoint-url https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com \
-            --exclude "*" \
-            --include "*.json"
+          # 上传到 COS
+          coscmd upload -r ./vectors/ /vectors/
 
       - name: Summary
         run: |
-          echo "✅ Vectors generated and uploaded to R2"
+          echo "✅ Vectors generated and uploaded to Tencent Cloud COS"
           echo "📊 Files processed: $(cat vectors/vectors.json | grep -o '"id"' | wc -l)"
