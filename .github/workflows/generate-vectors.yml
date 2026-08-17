@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - dev
+      - feat/ai-integration
     paths:
       - 'content/**'
   workflow_dispatch:
