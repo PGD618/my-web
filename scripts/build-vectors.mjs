@@ -65,7 +65,7 @@ class EmbeddingClient {
   }
 
   async embedBatch(texts) {
-    const batchSize = 25
+    const batchSize = 10 // 阿里云百炼限制：批次大小不能超过 10
     const results = []
 
     for (let i = 0; i < texts.length; i += batchSize) {
