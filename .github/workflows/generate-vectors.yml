@@ -18,8 +18,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
           token: ${{ secrets.GH_PAT }}
+
+      - name: Clean up nested submodule artifacts
+        run: |
+          # 清理可能的嵌套子模块残留配置
+          find content -name ".git" -type f -delete || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
