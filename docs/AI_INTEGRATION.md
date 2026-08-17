@@ -7,7 +7,7 @@
 ```
 用户提问 → Q版桌宠UI → /api/chat → 向量检索(LanceDB) → LLM生成(DeepSeek) → 流式返回
 
-Obsidian更新 → GitHub Push → Actions → Embedding(阿里云百炼) → LanceDB → R2存储
+Obsidian更新 → GitHub Push → Actions → Embedding(阿里云百炼) → LanceDB → 腾讯云COS存储
 ```
 
 ## 技术栈
@@ -21,13 +21,13 @@ Obsidian更新 → GitHub Push → Actions → Embedding(阿里云百炼) → La
 ### 后端
 - **Vercel Edge Runtime** - 低延迟 API
 - **LanceDB** - Serverless 向量数据库
-- **Cloudflare R2** - 向量文件存储
+- **腾讯云 COS** - 向量文件存储
 - **阿里云百炼** - Text Embedding 模型
 - **DeepSeek** - 对话生成模型
 
 ### 自动化
 - **GitHub Actions** - 自动化 Embedding 生成
-- **AWS CLI** - R2 文件上传
+- **COS CLI** - COS 文件上传
 
 ## 目录结构
 
@@ -66,12 +66,12 @@ DEEPSEEK_API_KEY=sk-xxxxx
 # 阿里云百炼 Embedding
 ALIBABA_EMBEDDING_API_KEY=sk-xxxxx
 
-# Cloudflare R2
-R2_ACCOUNT_ID=xxxxx
-R2_ACCESS_KEY_ID=xxxxx
-R2_SECRET_ACCESS_KEY=xxxxx
-R2_BUCKET_NAME=your-bucket
-R2_PUBLIC_URL=https://pub-xxxxx.r2.dev/vectors
+# 腾讯云 COS
+COS_SECRET_ID=AKID********************************
+COS_SECRET_KEY=********************************
+COS_BUCKET=my-web-1347081937
+COS_REGION=ap-beijing
+COS_PUBLIC_URL=https://my-web-1347081937.cos.ap-beijing.myqcloud.com/vectors
 ```
 
 ## GitHub Secrets 配置
@@ -79,10 +79,10 @@ R2_PUBLIC_URL=https://pub-xxxxx.r2.dev/vectors
 在 GitHub 仓库设置中添加以下 Secrets：
 
 - `ALIBABA_EMBEDDING_API_KEY`
-- `R2_ACCOUNT_ID`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_BUCKET_NAME`
+- `COS_SECRET_ID`
+- `COS_SECRET_KEY`
+- `COS_BUCKET`
+- `COS_REGION`
 
 ## 使用方法
 
