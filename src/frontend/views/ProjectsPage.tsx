@@ -69,8 +69,8 @@ const projects: Project[] = [
     title: '万境千寻 · 实习项目',
     internship: true,
     subtitle: 'Workflow 开发 · 万境千寻（北京）',
-    description: '实习进行中，项目详情待补充。',
-    tags: [],
+    description: 'Mozbrain / CapturEx 具身智能机器人平台，面向客户 POC 交付的机器人作业 Workflow 引擎。基于自研 Overmind 框架搭建图状态机式工作流骨架，并针对不同产线场景做业务改造与埋点监控建设。',
+    tags: ['Python', 'Overmind', 'ROS2', 'gRPC', 'WebSocket', 'FastAPI', 'Docker'],
     accent: 'text-sky-500',
     gradient: 'from-sky-600/20 to-cyan-600/10',
     links: [
@@ -78,12 +78,14 @@ const projects: Project[] = [
     ],
     year: '2026.07——至今',
     detail: {
-      background: '待补充。',
-      role: '待补充。',
+      background: 'Mozbrain 是面向机器人具身智能的大脑系统，CapturEx 为其配套的数据采集与作业执行后端。作为 SE 随 mentor 驻场客户 POC 交付，核心任务是把通用 workflow 引擎按不同产线场景（仓储分拣、电池检测等）做业务改造落地。',
+      role: '与 mentor 共同负责 Workflow 骨架搭建与业务场景适配，重点负责技术运营指标体系的搭建，同时参与数据采集环节建设。',
       highlights: [
-        '待补充',
+        '搭建通用 workflow 骨架并沉淀至 main 分支，已稳定应用于 2 个客户项目的产线场景，新项目搭建周期缩短约 60%',
+        '在 main 分支搭建节点级埋点监控，覆盖全部项目；并在 workflow 层搭建业务埋点，覆盖 2 个稳定项目，故障定位速度平均提升 43.7%',
+        '参与数采环节，已应用于 4 个项目，并了解 VLA 模型训练/后训练流程与真实产线部署的衔接关系',
       ],
-      learnings: '待补充。',
+      learnings: '第一次以 SE 角色驻场交付，体会到工程落地不只是把 workflow 跑通，更要兼顾不同客户场景的差异化需求和可运营性。搭建埋点监控体系的过程中，也对机器人作业全链路的故障归因有了更系统的理解。',
     },
   },
   {

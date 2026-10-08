@@ -17,20 +17,27 @@ const itemVariants: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] } },
 }
 
+// 粉龄基准：2026 年为 12 年许嵩老粉 / 10 年林俊杰粉，之后每年 +1
+const FAN_YEARS_BASE_YEAR = 2026
+const currentYear = new Date().getFullYear()
+const fanYearsOffset = Math.max(0, currentYear - FAN_YEARS_BASE_YEAR)
+const xuSongYears = 12 + fanYearsOffset
+const linJunjieYears = 10 + fanYearsOffset
+
 const tags = [
-  '巨蟹座', 'INFJ / ENFJ', '56% I 人', '温柔随和',
+  '巨蟹座', '日常 INFJ / 工作 INTJ', '56% I 人', '温柔随和',
   '情绪稳定', '全栈萌新', '音乐 & 运动 & 干饭', '倾听搭子',
 ]
 
 const stats = [
-  { label: '12年', desc: '老嵩鼠' },
-  { label: '10年', desc: 'JM' },
-  { label: '大二', desc: '山西大学' },
+  { label: `${xuSongYears}年`, desc: '老嵩鼠' },
+  { label: `${linJunjieYears}年`, desc: 'JM' },
+  { label: '大三', desc: '山西大学' },
   { label: '全栈', desc: '研发实习生' },
 ]
 
 const hobbies = [
-  { icon: FiMusic, title: '音乐本命', items: ['12 年许嵩老粉', '10 年林俊杰粉', '自学笛子中'] },
+  { icon: FiMusic, title: '音乐本命', items: [`${xuSongYears} 年许嵩老粉`, `${linJunjieYears} 年林俊杰粉`, '自学笛子中'] },
   { icon: FiHeart, title: '运动充电', items: ['羽毛球业余选手', '日常跑步', '健身新手'] },
   { icon: FiUsers, title: '干饭达人', items: ['干饭天才', '零食收割机', '认真吃喝快乐生活'] },
 ]
@@ -91,7 +98,7 @@ export default function AboutPage() {
           <div className="p-8 rounded-[32px] bg-zinc-900/30 border border-white/5 backdrop-blur-md space-y-4">
             <p className="text-zinc-400 leading-[1.8] text-[0.95rem]">
               目前作为<strong className="text-zinc-200">全栈研发实习生</strong>开启职场副本，主攻全栈方向开发实践。
-              来自<strong className="text-zinc-200">山西大学</strong>（非 211 双一流）的大二学生，起点普通，
+              来自<strong className="text-zinc-200">山西大学</strong>（非 211 双一流）的大三学生，起点普通，
               因此更愿意沉下心多学多做、加倍追赶，踏实打磨每一处细节。
             </p>
             <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
@@ -141,7 +148,7 @@ export default function AboutPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { label: 'MBTI', value: 'INFJ / ENFJ（56% I 人）' },
+              { label: 'MBTI', value: '日常 INFJ · 工作 INTJ' },
               { label: '属性', value: '温柔随和 · 共情力强 · 情绪稳定' },
               { label: '沟通', value: '好沟通 · 有耐心 · 擅长换位思考' },
               { label: '状态', value: '慢热但真诚 · 努力解锁 E 人 buff' },

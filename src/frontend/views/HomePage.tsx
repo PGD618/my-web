@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { motion, Variants } from 'framer-motion'
-import { FiZap, FiArrowRight, FiCode, FiExternalLink } from 'react-icons/fi'
+import { FiZap, FiArrowRight, FiCode, FiBriefcase, FiUser } from 'react-icons/fi'
 import { SiGithub, SiGmail } from 'react-icons/si'
 import Link from 'next/link'
 
@@ -28,9 +28,10 @@ const itemVariants: Variants = {
   },
 }
 
-const featuredProjects = [
-  { name: 'Noumi Server', tag: '实习项目 · 语核科技 AI Agent 平台', color: 'text-violet-500', bg: 'from-violet-600/20 to-purple-600/10' },
-  { name: '智绘山河——AI“晋”行时', tag: '主打项目 · 国赛作品 AI 行程规划', color: 'text-emerald-500', bg: 'from-emerald-600/20 to-teal-600/10' },
+const navCards = [
+  { name: '项目', tag: '代表作品 · 实习与竞赛项目', href: '/projects', icon: FiCode, bg: 'from-blue-600/20 to-cyan-600/10' },
+  { name: '履历', tag: '工作与社团 · 成长时间线', href: '/experience', icon: FiBriefcase, bg: 'from-violet-600/20 to-purple-600/10' },
+  { name: '关于我', tag: '性格标签 · 日常碎片', href: '/about', icon: FiUser, bg: 'from-emerald-600/20 to-teal-600/10' },
 ]
 export default function HomePage() {
   return (
@@ -60,7 +61,7 @@ export default function HomePage() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5vw] font-bold tracking-tight text-white leading-[1.1] wrap-break-words">
-                大二程序猿 / <br />
+                大三程序猿 / <br />
                 <span className="text-zinc-600 font-medium">独立开发者 & 思考者</span>
               </h1>
 
@@ -104,41 +105,35 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* ═══ 精选项目 ═══ */}
+        {/* ═══ 更多内容 ═══ */}
         <section className="space-y-5">
           <motion.div variants={itemVariants} className="flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600 flex items-center gap-2">
-              <FiCode /> 精选项目
+              <FiCode /> 更多内容
             </h2>
-            <Link
-              href="/projects"
-              className="text-[10px] font-mono text-zinc-600 hover:text-blue-400 transition-colors uppercase tracking-[0.2em] flex items-center gap-1"
-            >
-              查看全部
-              <FiArrowRight className="w-3 h-3" />
-            </Link>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {featuredProjects.map((project) => (
-              <motion.div
-                key={project.name}
-                variants={itemVariants}
-                className="group relative overflow-hidden rounded-[28px] bg-zinc-900/30 border border-white/5 p-6 backdrop-blur-sm transition-all duration-500 hover:bg-zinc-900/60 hover:border-white/10 hover:-translate-y-1 cursor-pointer"
-              >
-                <div className={`h-1 w-full bg-linear-to-r ${project.bg} opacity-60 group-hover:opacity-100 transition-opacity mb-5 rounded-full`} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {navCards.map((card) => (
+              <motion.div key={card.name} variants={itemVariants}>
+                <Link
+                  href={card.href}
+                  className="group relative overflow-hidden rounded-[28px] bg-zinc-900/30 border border-white/5 p-6 backdrop-blur-sm transition-all duration-500 hover:bg-zinc-900/60 hover:border-white/10 hover:-translate-y-1 cursor-pointer block"
+                >
+                  <div className={`h-1 w-full bg-linear-to-r ${card.bg} opacity-60 group-hover:opacity-100 transition-opacity mb-5 rounded-full`} />
 
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-bold text-white text-lg tracking-wide group-hover:text-blue-400 transition-colors">
-                      {project.name}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="font-bold text-white text-lg tracking-wide group-hover:text-blue-400 transition-colors">
+                        {card.name}
+                      </div>
+                      <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.15em] mt-1.5">
+                        {card.tag}
+                      </div>
                     </div>
-                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.15em] mt-1.5">
-                      {project.tag}
-                    </div>
+                    <FiArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                   </div>
-                  <FiExternalLink className="w-4 h-4 text-zinc-600 group-hover:text-blue-400 transition-colors" />
-                </div>
+                </Link>
               </motion.div>
             ))}
           </div>
