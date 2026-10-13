@@ -1,9 +1,4 @@
 import { NextRequest } from 'next/server'
-import { LLMFactory } from '@/lib/ai/llm/factory'
-import { createEmbeddingClient } from '@/lib/ai/vector/embedding'
-import { createLanceDBClient } from '@/lib/ai/vector/lancedb'
-
-export const runtime = 'edge'
 
 interface ChatRequest {
   messages: Array<{
@@ -23,7 +18,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 获取最后一条用户消息作为查询
     const lastUserMessage = messages
       .slice()
       .reverse()
@@ -36,45 +30,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 1. 向量检索相关上下文
-    const embeddingClient = createEmbeddingClient()
-    const lanceDBClient = createLanceDBClient()
+    const agentURL = process.env.AI_AGENT_URL
+    if (!agentURL) {
+      throw new Error('Missing AI_AGENT_URL environment variable')
+    }
 
-    const results = await lanceDBClient.searchByText(
-      lastUserMessage.content,
-      (text) => embeddingClient.embed(text),
-      5 // 取top 5相关内容
-    )
-
-    // 2. 构建上下文
-    const context = results
-      .map(
-        (result, idx) =>
-          `[${idx + 1}] 标题: ${result.metadata.title}\n内容: ${result.content}\n`
-      )
-      .join('\n---\n\n')
-
-    // 3. 调用 LLM 生成回复
-    const llm = LLMFactory.createDefault()
-
-    // 4. 流式返回
-    const encoder = new TextEncoder()
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of llm.chat(messages, context)) {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: chunk })}\n\n`))
-          }
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-          controller.close()
-        } catch (error) {
-          console.error('Stream error:', error)
-          controller.error(error)
-        }
-      },
+    const agentResponse = await fetch(`${agentURL}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: lastUserMessage.content }),
     })
 
-    return new Response(stream, {
+    if (!agentResponse.ok || !agentResponse.body) {
+      throw new Error(`AI agent request failed: ${agentResponse.status} ${agentResponse.statusText}`)
+    }
+
+    return new Response(agentResponse.body, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
