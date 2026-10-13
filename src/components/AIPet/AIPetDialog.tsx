@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { FiX, FiSend, FiLoader } from 'react-icons/fi'
+import Image from 'next/image'
+import { AnimatePresence, motion } from 'framer-motion'
+import { FiX, FiArrowUp } from 'react-icons/fi'
+import { PERSONA, IDLE_FRAMES, FRAME_DURATION } from './persona'
+import { useFrameAnimation } from './useFrameAnimation'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -13,21 +17,45 @@ interface AIPetDialogProps {
   onClose: () => void
 }
 
+const SUGGESTIONS = ['你是谁？', '最近在做什么项目？', '聊聊你的技术栈']
+
 export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // 自动滚动到底部
+  // 思考时立绘加速播放
+  const { src: avatarSrc } = useFrameAnimation(
+    IDLE_FRAMES,
+    isLoading ? FRAME_DURATION / 2 : FRAME_DURATION,
+    isOpen
+  )
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, isLoading])
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus()
+  }, [isOpen])
 
-    const userMessage: Message = { role: 'user', content: input }
+  // Esc 关闭
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isOpen, onClose])
+
+  const send = async (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed || isLoading) return
+
+    const userMessage: Message = { role: 'user', content: trimmed }
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
@@ -36,57 +64,44 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-        }),
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to get response')
-      }
+      if (!response.ok) throw new Error('Failed to get response')
 
-      // 解析 SSE 流
       const reader = response.body?.getReader()
       if (!reader) throw new Error('No reader available')
 
       const decoder = new TextDecoder()
       let assistantMessage = ''
 
-      // 添加占位消息
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: '' },
-      ])
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
 
         const chunk = decoder.decode(value)
-        const lines = chunk.split('\n')
+        for (const line of chunk.split('\n')) {
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6)
+          if (data === '[DONE]') continue
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6)
-            if (data === '[DONE]') continue
-
-            try {
-              const parsed = JSON.parse(data)
-              if (parsed.content) {
-                assistantMessage += parsed.content
-                // 更新最后一条消息
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  newMessages[newMessages.length - 1] = {
-                    role: 'assistant',
-                    content: assistantMessage,
-                  }
-                  return newMessages
-                })
-              }
-            } catch (e) {
-              console.error('Failed to parse SSE:', e)
+          try {
+            const parsed = JSON.parse(data)
+            if (parsed.content) {
+              assistantMessage += parsed.content
+              setMessages(prev => {
+                const next = [...prev]
+                next[next.length - 1] = {
+                  role: 'assistant',
+                  content: assistantMessage,
+                }
+                return next
+              })
             }
+          } catch (e) {
+            console.error('Failed to parse SSE:', e)
           }
         }
       }
@@ -94,110 +109,210 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
       console.error('Chat error:', error)
       setMessages(prev => [
         ...prev,
-        {
-          role: 'assistant',
-          content: '抱歉，我遇到了一些问题。请稍后再试。',
-        },
+        { role: 'assistant', content: PERSONA.errorReply },
       ])
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSend()
+      send(input)
     }
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl h-[600px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col">
-        {/* 头部 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-xl">🤖</span>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">AI 助手</h2>
-              <p className="text-sm text-zinc-400">了解我的个人 AI</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-zinc-400 hover:text-white transition-colors"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="fixed inset-0 z-100 flex items-center justify-center bg-zinc-950/80 backdrop-blur-md p-4 sm:p-6"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
+            onClick={e => e.stopPropagation()}
+            className="relative w-full max-w-2xl h-[min(640px,85vh)] flex flex-col overflow-hidden rounded-[32px] sm:rounded-[40px] border border-white/5 bg-zinc-900/60 backdrop-blur-xl shadow-2xl shadow-black/60"
           >
-            <FiX className="w-5 h-5" />
-          </button>
-        </div>
+            {/* 氛围光斑，沿用首页的处理 */}
+            <div className="pointer-events-none absolute -top-[20%] -left-[15%] h-[55%] w-[55%] rounded-full bg-blue-500/10 blur-[110px]" />
+            <div className="pointer-events-none absolute -bottom-[20%] -right-[15%] h-[55%] w-[55%] rounded-full bg-purple-500/10 blur-[110px]" />
 
-        {/* 消息区域 */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {messages.length === 0 && (
-            <div className="text-center text-zinc-500 mt-8">
-              <p>👋 你好！有什么想了解的吗？</p>
-              <p className="text-sm mt-2">我可以根据我的笔记回答关于我的问题</p>
-            </div>
-          )}
+            {/* ═══ 头部 ═══ */}
+            <header className="relative z-10 flex items-center justify-between gap-4 px-6 sm:px-8 py-5 border-b border-white/5">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                  <Image
+                    src={avatarSrc}
+                    alt={PERSONA.name}
+                    width={120}
+                    height={120}
+                    className="h-full w-full object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="flex items-baseline gap-2 text-lg font-bold tracking-wide text-white">
+                    {PERSONA.name}
+                    <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-zinc-600">
+                      {PERSONA.latin}
+                    </span>
+                  </h2>
+                  <p className="truncate text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500">
+                    {PERSONA.title} · {PERSONA.tagline}
+                  </p>
+                </div>
+              </div>
 
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] px-4 py-2 rounded-lg ${
-                  msg.role === 'user'
-                    ? 'bg-cyan-500 text-white'
-                    : 'bg-zinc-800 text-zinc-100'
-                }`}
+              <button
+                onClick={onClose}
+                aria-label="关闭对话"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-400 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
-              </div>
+                <FiX className="h-4 w-4" />
+              </button>
+            </header>
+
+            {/* ═══ 消息区 ═══ */}
+            <div className="custom-scrollbar relative z-10 flex-1 space-y-5 overflow-y-auto px-6 sm:px-8 py-6">
+              {messages.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                  className="flex h-full flex-col items-center justify-center gap-6 text-center"
+                >
+                  <div className="h-28 w-28 opacity-90 drop-shadow-[0_8px_30px_rgba(59,130,246,0.25)]">
+                    <Image
+                      src={avatarSrc}
+                      alt={PERSONA.name}
+                      width={420}
+                      height={580}
+                      className="h-full w-full object-contain"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xl font-bold tracking-wide text-white">
+                      {PERSONA.greeting}
+                    </p>
+                    <p className="mx-auto max-w-sm text-sm font-light leading-relaxed tracking-wide text-zinc-500">
+                      {PERSONA.greetingSub}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {SUGGESTIONS.map(s => (
+                      <button
+                        key={s}
+                        onClick={() => send(s)}
+                        className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-light tracking-wide text-zinc-400 transition-all hover:-translate-y-0.5 hover:border-blue-400/30 hover:bg-blue-500/10 hover:text-blue-300"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {messages.map((msg, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {msg.role === 'assistant' && (
+                    <div className="mt-1 mr-3 h-7 w-7 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                      <Image
+                        src={avatarSrc}
+                        alt={PERSONA.name}
+                        width={80}
+                        height={80}
+                        className="h-full w-full object-contain"
+                        unoptimized
+                      />
+                    </div>
+                  )}
+                  <div
+                    className={
+                      msg.role === 'user'
+                        ? 'max-w-[82%] rounded-[22px] rounded-br-lg bg-blue-600 px-5 py-3 text-[15px] leading-relaxed tracking-wide text-white shadow-lg shadow-blue-500/20'
+                        : 'max-w-[82%] rounded-[22px] rounded-bl-lg border border-white/5 bg-zinc-900/60 px-5 py-3 text-[15px] leading-relaxed tracking-wide text-zinc-200 backdrop-blur-sm'
+                    }
+                  >
+                    <p className="whitespace-pre-wrap wrap-break-words">
+                      {msg.content}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+
+              {isLoading && messages[messages.length - 1]?.content === '' && (
+                <div className="flex justify-start pl-10">
+                  <div className="flex items-center gap-3 rounded-[22px] rounded-bl-lg border border-white/5 bg-zinc-900/60 px-5 py-3 backdrop-blur-sm">
+                    <span className="flex gap-1">
+                      {[0, 1, 2].map(i => (
+                        <motion.span
+                          key={i}
+                          className="h-1.5 w-1.5 rounded-full bg-blue-400"
+                          animate={{ opacity: [0.25, 1, 0.25] }}
+                          transition={{
+                            duration: 1.1,
+                            repeat: Infinity,
+                            delay: i * 0.18,
+                            ease: 'easeInOut',
+                          }}
+                        />
+                      ))}
+                    </span>
+                    <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500">
+                      {PERSONA.thinking}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
-          ))}
 
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-zinc-800 px-4 py-2 rounded-lg flex items-center gap-2">
-                <FiLoader className="w-4 h-4 animate-spin text-cyan-400" />
-                <span className="text-zinc-400 text-sm">思考中...</span>
+            {/* ═══ 输入区 ═══ */}
+            <div className="relative z-10 border-t border-white/5 px-6 sm:px-8 py-5">
+              <div className="flex items-end gap-3 rounded-[24px] border border-white/10 bg-zinc-950/60 p-2 pl-5 transition-colors focus-within:border-blue-400/40">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={`问问${PERSONA.name}…`}
+                  rows={1}
+                  disabled={isLoading}
+                  className="custom-scrollbar max-h-28 flex-1 resize-none self-center bg-transparent py-2 text-[15px] font-light tracking-wide text-white placeholder:text-zinc-600 focus:outline-none disabled:opacity-50"
+                />
+                <button
+                  onClick={() => send(input)}
+                  disabled={!input.trim() || isLoading}
+                  aria-label="发送"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-95 active:scale-90 disabled:bg-white/5 disabled:text-zinc-600 disabled:shadow-none disabled:hover:scale-100"
+                >
+                  <FiArrowUp className="h-[18px] w-[18px]" />
+                </button>
               </div>
+              <p className="mt-3 text-center text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-700">
+                Enter 发送 · Shift + Enter 换行 · Esc 关闭
+              </p>
             </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* 输入区域 */}
-        <div className="px-6 py-4 border-t border-zinc-800">
-          <div className="flex gap-2">
-            <textarea
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="输入你的问题..."
-              className="flex-1 bg-zinc-900 text-white px-4 py-2 rounded-lg border border-zinc-700 focus:border-cyan-400 focus:outline-none resize-none"
-              rows={2}
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="px-6 bg-cyan-500 hover:bg-cyan-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-lg transition-colors flex items-center justify-center"
-            >
-              <FiSend className="w-5 h-5" />
-            </button>
-          </div>
-          <p className="text-xs text-zinc-500 mt-2">
-            按 Enter 发送，Shift + Enter 换行
-          </p>
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
