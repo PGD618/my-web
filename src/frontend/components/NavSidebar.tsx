@@ -1,9 +1,12 @@
 ﻿'use client'
 import Link from 'next/link'
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { useRef, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { FiHome, FiEdit3, FiLayers, FiUser, FiClock } from 'react-icons/fi'
 import type { IconType } from 'react-icons'
+
+const EASTER_EGG_CLICKS = 5
+const EASTER_EGG_WINDOW_MS = 1500
 
 const navItems = [
   { href: '/',       icon: FiHome,   label: 'Home' },
@@ -57,6 +60,33 @@ function MobileNavItem({ href, icon: Icon, label, active }: { href: string; icon
   )
 }
 
+function LogoEasterEgg() {
+  const router = useRouter()
+  const clickTimes = useRef<number[]>([])
+
+  const handleClick = () => {
+    const now = Date.now()
+    clickTimes.current = [...clickTimes.current, now].filter(
+      t => now - t <= EASTER_EGG_WINDOW_MS
+    )
+
+    if (clickTimes.current.length >= EASTER_EGG_CLICKS) {
+      clickTimes.current = []
+      router.push('/admin/login')
+    }
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      aria-label="PGD618"
+      className="w-8 h-8 bg-white rounded-xl mb-12 flex items-center justify-center text-black font-black select-none"
+    >
+      P
+    </button>
+  )
+}
+
 export function NavSidebar() {
   const pathname = usePathname()
 
@@ -69,7 +99,7 @@ export function NavSidebar() {
     <>
       {/* Desktop: left sidebar */}
       <nav className="hidden md:flex w-[5vw] min-w-[64px] max-w-[80px] h-full border-r border-zinc-900 bg-black/20 flex-col items-center py-8 z-50 shrink-0">
-        <div className="w-8 h-8 bg-white rounded-xl mb-12 flex items-center justify-center text-black font-black">P</div>
+        <LogoEasterEgg />
         <div className="flex-1 flex flex-col items-center gap-8 text-zinc-500">
           {navItems.slice(0, 4).map((item) => (
             <NavIcon key={item.href} {...item} />

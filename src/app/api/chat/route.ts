@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { getRole } from '@/lib/auth'
 
 interface ChatRequest {
   messages: Array<{
@@ -35,10 +36,20 @@ export async function POST(req: NextRequest) {
       throw new Error('Missing AI_AGENT_URL environment variable')
     }
 
+    const serviceToken = process.env.SERVICE_TOKEN
+    if (!serviceToken) {
+      throw new Error('Missing SERVICE_TOKEN environment variable')
+    }
+
+    const role = await getRole(req)
+
     const agentResponse = await fetch(`${agentURL}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: lastUserMessage.content }),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Service-Token': serviceToken,
+      },
+      body: JSON.stringify({ message: lastUserMessage.content, role }),
     })
 
     if (!agentResponse.ok || !agentResponse.body) {
