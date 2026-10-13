@@ -25,6 +25,17 @@
 *   **字体**: `Geist Sans` & `Mono` (Vercel 官方字体，极致的技术感排版)
 *   **数据可视化**: `react-force-graph-2d` (用于实现知识图谱)
 *   **内容流**: 通过 `Git Submodule` 挂载私有的 **Obsidian** 仓库。
+*   **AI 助手**: 独立的 RAG 服务（`my-web-agent` 仓库，FastAPI + LanceDB），本仓库仅通过
+    `/api/chat` 做薄代理转发，不耦合具体实现。
+
+---
+
+## 🤖 AI 助手「青砚」
+
+站点右下角的常驻助手，基于你的 Obsidian 笔记做检索增强问答。前端组件在
+[`src/components/AIPet`](./src/components/AIPet)，对接的是独立部署的 `my-web-agent`
+服务（见该仓库 README）。当前是单轮问答 MVP，身份识别（区分站主本人与访客）与跨会话记忆
+的设计正在推进，详见 `my-web-agent/docs/MEMORY_ARCHITECTURE.md`。
 
 ---
 
