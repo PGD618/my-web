@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
         return
       }
 
-      router.push('/')
+      router.push('/admin')
       router.refresh()
     } catch {
       setError('登录失败，请重试')

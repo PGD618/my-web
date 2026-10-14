@@ -23,7 +23,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // 思考时立绘加速播放
@@ -33,8 +33,15 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
     isOpen
   )
 
+  // 直接设置 scrollTop，不用 scrollIntoView({ behavior: 'smooth' })——流式输出时
+  // messages 每收到一个 token 就变化一次，smooth 滚动动画会和消息气泡自己的
+  // framer-motion 入场位移动画（y: 10 -> 0）同时跑，两个独立的位移叠在一起，
+  // 看起来就是"先往上滚一下再定住"。直接跳到底部不会有这个问题。
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (container) {
+      container.scrollTop = container.scrollHeight
+    }
   }, [messages, isLoading])
 
   useEffect(() => {
@@ -106,7 +113,10 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
         }
       }
     } catch (error) {
-      console.error('Chat error:', error)
+      // 用 warn 不用 error：这个失败已经通过 UI（errorReply 气泡）呈现给用户了，
+      // 不是未处理异常。Next.js dev 模式会把 console.error 弹成全局报错浮层，
+      // 叠在对话框上面，看起来像布局错位，其实只是浮层叠加，不是真的样式问题。
+      console.warn('Chat error:', error)
       setMessages(prev => [
         ...prev,
         { role: 'assistant', content: PERSONA.errorReply },
@@ -182,7 +192,10 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
             </header>
 
             {/* ═══ 消息区 ═══ */}
-            <div className="custom-scrollbar relative z-10 flex-1 space-y-5 overflow-y-auto px-6 sm:px-8 py-6">
+            <div
+              ref={messagesContainerRef}
+              className="custom-scrollbar relative z-10 flex-1 space-y-5 overflow-y-auto px-6 sm:px-8 py-6"
+            >
               {messages.length === 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
@@ -227,7 +240,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
                   key={idx}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' && (
@@ -280,8 +293,6 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
                   </div>
                 </div>
               )}
-
-              <div ref={messagesEndRef} />
             </div>
 
             {/* ═══ 输入区 ═══ */}
