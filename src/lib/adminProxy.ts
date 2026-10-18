@@ -24,9 +24,9 @@ export async function proxyToAgent(
     throw new Error('Missing AI_AGENT_URL environment variable')
   }
 
-  const serviceToken = process.env.SERVICE_TOKEN
+  const serviceToken = process.env.AI_AGENT_SERVICE_TOKEN
   if (!serviceToken) {
-    throw new Error('Missing SERVICE_TOKEN environment variable')
+    throw new Error('Missing AI_AGENT_SERVICE_TOKEN environment variable')
   }
 
   try {
