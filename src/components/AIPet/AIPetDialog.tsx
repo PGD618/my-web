@@ -3,13 +3,19 @@
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
-import { FiX, FiArrowUp } from 'react-icons/fi'
+import { FiX, FiArrowUp, FiCopy, FiCheck } from 'react-icons/fi'
 import { PERSONA, IDLE_FRAMES, FRAME_DURATION } from './persona'
 import { useFrameAnimation } from './useFrameAnimation'
+
+interface IntentSegment {
+  type: 'fact_input' | 'retrieval' | 'chitchat'
+  content: string
+}
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  segments?: IntentSegment[]  // 结构化模式
 }
 
 interface AIPetDialogProps {
@@ -23,8 +29,15 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  const copyMessage = async (idx: number, content: string) => {
+    await navigator.clipboard.writeText(content)
+    setCopiedIdx(idx)
+    setTimeout(() => setCopiedIdx(prev => (prev === idx ? null : prev)), 1500)
+  }
 
   // 思考时立绘加速播放
   const { src: avatarSrc } = useFrameAnimation(
@@ -47,6 +60,17 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
   useEffect(() => {
     if (isOpen) inputRef.current?.focus()
   }, [isOpen])
+
+  // 输入框随内容弹性伸缩（参考 Claude Code 输入框）：每次内容变化先把高度重置成
+  // auto 再读 scrollHeight 设回去，不能跳过"重置成 auto"这一步，否则 scrollHeight
+  // 读到的是旧高度，内容变短时框不会缩回去。max-h-28 + custom-scrollbar 负责
+  // 到达上限后的滚动，这里只管"没到上限时跟着内容涨"。
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [input])
 
   // Esc 关闭
   useEffect(() => {
@@ -81,6 +105,8 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
 
       const decoder = new TextDecoder()
       let assistantMessage = ''
+      let segments: IntentSegment[] = []
+      let currentSegment: IntentSegment | null = null
 
       setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
@@ -96,7 +122,53 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
 
           try {
             const parsed = JSON.parse(data)
-            if (parsed.content) {
+
+            // 结构化模式
+            if (parsed.type === 'intent_start') {
+              currentSegment = {
+                type: parsed.intent_type,
+                content: '',
+              }
+            } else if (parsed.type === 'content') {
+              if (currentSegment) {
+                // 结构化模式：累加到当前 segment
+                currentSegment.content += parsed.content
+              } else {
+                // 纯文本模式（向后兼容）或单 retrieval 快速路径
+                assistantMessage += parsed.content
+              }
+
+              // 实时更新 UI
+              setMessages(prev => {
+                const next = [...prev]
+                const lastMsg = next[next.length - 1]
+                if (currentSegment) {
+                  // 结构化模式：更新 segments
+                  const updatedSegments = [...segments]
+                  if (updatedSegments.length === 0 || updatedSegments[updatedSegments.length - 1] !== currentSegment) {
+                    updatedSegments.push(currentSegment)
+                  }
+                  next[next.length - 1] = {
+                    ...lastMsg,
+                    segments: updatedSegments,
+                    content: '', // segments 存在时 content 不用
+                  }
+                } else {
+                  // 纯文本模式
+                  next[next.length - 1] = {
+                    ...lastMsg,
+                    content: assistantMessage,
+                  }
+                }
+                return next
+              })
+            } else if (parsed.type === 'intent_end') {
+              if (currentSegment) {
+                segments.push(currentSegment)
+                currentSegment = null
+              }
+            } else if (parsed.content) {
+              // 兜底：旧格式纯文本 SSE（向后兼容）
               assistantMessage += parsed.content
               setMessages(prev => {
                 const next = [...prev]
@@ -241,7 +313,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, ease: 'easeOut' }}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`group flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' && (
                     <div className="mt-1 mr-3 h-7 w-7 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5">
@@ -262,9 +334,62 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
                         : 'max-w-[82%] rounded-[22px] rounded-bl-lg border border-white/5 bg-zinc-900/60 px-5 py-3 text-[15px] leading-relaxed tracking-wide text-zinc-200 backdrop-blur-sm'
                     }
                   >
-                    <p className="whitespace-pre-wrap wrap-break-words">
-                      {msg.content}
-                    </p>
+                    {msg.segments ? (
+                      // 结构化模式：每个 segment 独立渲染
+                      <div className="space-y-3">
+                        {msg.segments.map((seg, i) => (
+                          <div
+                            key={i}
+                            className={
+                              seg.type === 'fact_input'
+                                ? 'rounded-lg border border-green-500/20 bg-green-500/5 p-3'
+                                : seg.type === 'chitchat'
+                                  ? 'rounded-lg border border-purple-500/20 bg-purple-500/5 p-3'
+                                  : ''
+                            }
+                          >
+                            {seg.type === 'fact_input' && (
+                              <div className="mb-2 flex items-center gap-2 text-xs text-green-400">
+                                <FiCheck className="h-3 w-3" />
+                                <span>已记录</span>
+                              </div>
+                            )}
+                            {seg.type === 'chitchat' && (
+                              <div className="mb-2 flex items-center gap-2 text-xs text-purple-400">
+                                <span className="font-medium">💬 闲聊回复</span>
+                              </div>
+                            )}
+                            <p className="whitespace-pre-wrap wrap-break-words">
+                              {seg.content}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      // 纯文本模式（向后兼容）
+                      <p className="whitespace-pre-wrap wrap-break-words">
+                        {msg.content}
+                      </p>
+                    )}
+                    {msg.role === 'assistant' && (msg.content || msg.segments) && (
+                      <button
+                        onClick={() => copyMessage(idx, msg.content || msg.segments?.map(s => s.content).join('\n\n') || '')}
+                        aria-label="复制回答"
+                        className="mt-2 flex items-center gap-1 text-[11px] font-light tracking-wide text-zinc-600 opacity-0 transition-opacity hover:text-zinc-300 group-hover:opacity-100"
+                      >
+                        {copiedIdx === idx ? (
+                          <>
+                            <FiCheck className="h-3 w-3 text-green-400" />
+                            <span className="text-green-400">已复制</span>
+                          </>
+                        ) : (
+                          <>
+                            <FiCopy className="h-3 w-3" />
+                            复制
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ))}
