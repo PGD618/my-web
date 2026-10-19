@@ -1,12 +1,6 @@
-import { NextResponse } from 'next/server'
-import { getRole } from '@/lib/auth'
+import { NextRequest } from 'next/server'
 import { proxyToAgent } from '@/lib/adminProxy'
 
-export async function GET(request: Request) {
-  const role = await getRole()
-  if (role !== 'owner') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  return proxyToAgent(request, '/admin/semantic-documents')
+export async function GET(req: NextRequest) {
+  return proxyToAgent(req, '/admin/semantic-documents')
 }
