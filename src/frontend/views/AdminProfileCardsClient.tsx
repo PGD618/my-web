@@ -11,7 +11,22 @@ interface ProfileCard {
   key: string
   value: string
   source: string
-  created_at: string
+  updated_at: string
+}
+
+interface ProfileCardGroup {
+  key: string
+  entries: ProfileCard[]
+}
+
+function groupByKey(items: ProfileCard[]): ProfileCardGroup[] {
+  const groups = new Map<string, ProfileCard[]>()
+  for (const item of items) {
+    const entries = groups.get(item.key) ?? []
+    entries.push(item)
+    groups.set(item.key, entries)
+  }
+  return Array.from(groups.entries()).map(([key, entries]) => ({ key, entries }))
 }
 
 export function AdminProfileCardsClient() {
@@ -33,24 +48,24 @@ export function AdminProfileCardsClient() {
     }
   }
 
-  async function handleDelete(key: string) {
-    setProcessingId(key)
-    setError(prev => ({ ...prev, [key]: '' }))
+  async function handleDelete(id: string) {
+    setProcessingId(id)
+    setError(prev => ({ ...prev, [id]: '' }))
 
     try {
-      const res = await fetch(`/api/admin/profile-cards/${encodeURIComponent(key)}`, {
+      const res = await fetch(`/api/admin/profile-cards/${encodeURIComponent(id)}`, {
         method: 'DELETE',
       })
 
       if (!res.ok) {
         const data = await res.json()
-        setError(prev => ({ ...prev, [key]: data.error || '删除失败' }))
+        setError(prev => ({ ...prev, [id]: data.error || '删除失败' }))
         return
       }
 
-      setItems(prev => prev.filter(item => item.key !== key))
+      setItems(prev => prev.filter(item => item.id !== id))
     } catch {
-      setError(prev => ({ ...prev, [key]: '网络错误' }))
+      setError(prev => ({ ...prev, [id]: '网络错误' }))
     } finally {
       setProcessingId(null)
     }
@@ -60,36 +75,42 @@ export function AdminProfileCardsClient() {
     load()
   }, [])
 
+  const groups = groupByKey(items)
+
   return (
-    <AdminPageShell icon={FiUser} title="个人信息槽位" subtitle="Profile Cards">
+    <AdminPageShell icon={FiUser} title="个人信息槛位" subtitle="Profile Cards">
       {error.global && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error.global}</p>}
       {loading ? (
         <p className="text-xs font-light tracking-wide text-zinc-500">加载中…</p>
       ) : (
         <ReviewList
-          items={items}
+          items={groups}
           emptyLabel="暂无个人信息"
-          renderItem={item => (
+          renderItem={group => (
             <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-zinc-400">{item.key}</p>
-                  <p className="mt-1 text-base text-white">{item.value}</p>
-                  <p className="mt-2 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-600">
-                    {item.source} · {new Date(item.created_at).toLocaleString('zh-CN')}
-                  </p>
-                </div>
-                <ActionButton
-                  icon={FiTrash2}
-                  label="删除"
-                  variant="danger"
-                  disabled={processingId === item.key}
-                  onClick={() => handleDelete(item.key)}
-                />
+              <p className="text-sm font-medium text-zinc-400">{group.key}</p>
+              <div className="mt-2 space-y-3">
+                {group.entries.map(entry => (
+                  <div key={entry.id} className="flex items-start justify-between gap-4 border-t border-white/5 pt-3 first:border-t-0 first:pt-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-base text-white">{entry.value}</p>
+                      <p className="mt-2 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-600">
+                        {entry.source} · {new Date(entry.updated_at).toLocaleString('zh-CN')}
+                      </p>
+                      {error[entry.id] && (
+                        <p className="mt-2 text-xs font-light tracking-wide text-red-400">{error[entry.id]}</p>
+                      )}
+                    </div>
+                    <ActionButton
+                      icon={FiTrash2}
+                      label="删除"
+                      variant="danger"
+                      disabled={processingId === entry.id}
+                      onClick={() => handleDelete(entry.id)}
+                    />
+                  </div>
+                ))}
               </div>
-              {error[item.key] && (
-                <p className="mt-3 text-xs font-light tracking-wide text-red-400">{error[item.key]}</p>
-              )}
             </div>
           )}
         />
