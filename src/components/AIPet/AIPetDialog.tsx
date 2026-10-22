@@ -16,6 +16,9 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   segments?: IntentSegment[]  // 结构化模式
+  // ISO8601，agent 侧会话护栏（超过 2 小时未活动自动重置）用它判断时长，
+  // 见 my-web-agent/src/agent/memory/short_term.py。
+  timestamp?: string
 }
 
 interface AIPetDialogProps {
@@ -86,7 +89,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
     const trimmed = text.trim()
     if (!trimmed || isLoading) return
 
-    const userMessage: Message = { role: 'user', content: trimmed }
+    const userMessage: Message = { role: 'user', content: trimmed, timestamp: new Date().toISOString() }
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
@@ -108,7 +111,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
       let segments: IntentSegment[] = []
       let currentSegment: IntentSegment | null = null
 
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }])
+      setMessages(prev => [...prev, { role: 'assistant', content: '', timestamp: new Date().toISOString() }])
 
       while (true) {
         const { done, value } = await reader.read()

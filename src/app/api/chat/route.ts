@@ -5,6 +5,7 @@ interface ChatRequest {
   messages: Array<{
     role: 'user' | 'assistant'
     content: string
+    timestamp?: string
   }>
 }
 
