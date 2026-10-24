@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FiFileText, FiEdit2, FiSave, FiX, FiCheck } from 'react-icons/fi'
+import { FiFileText, FiEdit2, FiSave, FiX, FiCheck, FiAlertTriangle } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
+import { detectSuspiciousLines } from '@/lib/detectSuspiciousLines'
 
 interface SemanticDocument {
   id: string
@@ -78,6 +79,23 @@ export function AdminSemanticDocumentsClient() {
   }
 
   async function resolveConsolidation(id: string, action: 'approve' | 'reject') {
+    if (action === 'approve') {
+      const item = items.find(i => i.id === id)
+      if (item?.pending_content) {
+        const suspiciousLines = detectSuspiciousLines(item.pending_content).filter(
+          line => line.isSuspicious
+        )
+        let confirmMsg = '确认批准此整理提案吗？'
+        if (suspiciousLines.length > 0) {
+          const preview = suspiciousLines.slice(0, 3).map(line => `"${line.text}"`).join('\n')
+          confirmMsg = `警告：提案中发现 ${suspiciousLines.length} 行疑似非主人观点：\n${preview}${suspiciousLines.length > 3 ? '\n...' : ''}\n\n确认仍要覆盖原内容吗？`
+        }
+        if (!window.confirm(confirmMsg)) {
+          return
+        }
+      }
+    }
+
     setProcessingId(id)
     setError(prev => ({ ...prev, [id]: '' }))
 
@@ -117,6 +135,10 @@ export function AdminSemanticDocumentsClient() {
 
   return (
     <AdminPageShell icon={FiFileText} title="语义记忆文档" subtitle="Semantic Documents">
+      <div className="mb-4 rounded-lg border border-amber-400/20 bg-amber-500/5 p-3">
+        <p className="text-xs text-amber-300">自动整理已暂停，以下为历史遗留提案，建议驳回后由新流程重新整理</p>
+      </div>
+
       {error.global && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error.global}</p>}
       {loading ? (
         <p className="text-xs font-light tracking-wide text-zinc-500">加载中…</p>
@@ -124,64 +146,134 @@ export function AdminSemanticDocumentsClient() {
         <ReviewList
           items={items}
           emptyLabel="暂无记忆文档"
-          renderItem={item => (
-            <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-4">
-                  <p className="text-sm font-medium text-zinc-400">{item.category}</p>
-                  <div className="flex gap-2">
-                    {editingId === item.id ? (
-                      <>
-                        <ActionButton
-                          icon={FiSave}
-                          label="保存"
-                          variant="primary"
-                          disabled={processingId === item.id}
-                          onClick={() => saveEdit(item.id)}
-                        />
-                        <ActionButton
-                          icon={FiX}
-                          label="取消"
-                          variant="danger"
-                          disabled={processingId === item.id}
-                          onClick={cancelEdit}
-                        />
-                      </>
-                    ) : (
-                      <ActionButton
-                        icon={FiEdit2}
-                        label="编辑"
-                        variant="primary"
-                        onClick={() => startEdit(item)}
-                      />
-                    )}
+          renderItem={item => {
+            const contentSuspicious = detectSuspiciousLines(item.content).filter(l => l.isSuspicious)
+            const pendingSuspicious = item.pending_content
+              ? detectSuspiciousLines(item.pending_content).filter(l => l.isSuspicious)
+              : []
+
+            return (
+              <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4">
+                {contentSuspicious.length > 0 && (
+                  <div className="mb-3 flex items-center gap-2 rounded-lg border border-red-400/20 bg-red-500/5 px-3 py-2">
+                    <FiAlertTriangle className="h-4 w-4 text-red-400" />
+                    <p className="text-xs text-red-300">
+                      正文中有 {contentSuspicious.length} 行疑似非主人观点，建议编辑删除
+                    </p>
                   </div>
-                </div>
-                <div className="mt-2">
-                  {editingId === item.id ? (
-                    <textarea
-                      value={editContent}
-                      onChange={e => setEditContent(e.target.value)}
-                      className="w-full min-h-[200px] bg-zinc-900 text-zinc-300 text-xs font-mono p-3 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500"
-                    />
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <p className="text-sm font-medium text-zinc-400">{item.category}</p>
+                    <div className="flex gap-2">
+                      {editingId === item.id ? (
+                        <>
+                          <ActionButton
+                            icon={FiSave}
+                            label="保存"
+                            variant="primary"
+                            disabled={processingId === item.id}
+                            onClick={() => saveEdit(item.id)}
+                          />
+                          <ActionButton
+                            icon={FiX}
+                            label="取消"
+                            variant="danger"
+                            disabled={processingId === item.id}
+                            onClick={cancelEdit}
+                          />
+                        </>
+                      ) : (
+                        <ActionButton
+                          icon={FiEdit2}
+                          label="编辑"
+                          variant="primary"
+                          onClick={() => startEdit(item)}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {item.pending_content !== null ? (
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <div>
+                        <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-600">
+                          当前内容
+                        </p>
+                        {editingId === item.id ? (
+                          <textarea
+                            value={editContent}
+                            onChange={e => setEditContent(e.target.value)}
+                            className="w-full min-h-[200px] bg-zinc-900 text-zinc-300 text-xs font-mono p-3 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500"
+                          />
+                        ) : (
+                          <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-3">
+                            {detectSuspiciousLines(item.content).map((line, idx) => (
+                              <div
+                                key={idx}
+                                className={
+                                  line.isSuspicious
+                                    ? 'border-l-2 border-red-500 bg-red-500/10 px-2 py-1 text-xs font-mono text-zinc-300'
+                                    : 'text-xs font-mono text-zinc-300 py-1'
+                                }
+                              >
+                                {line.text}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="mb-2 flex items-center justify-between">
+                          <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-amber-400">
+                            待审核整理提案
+                          </p>
+                          {pendingSuspicious.length > 0 && (
+                            <span className="text-[10px] text-red-400 font-medium">
+                              发现 {pendingSuspicious.length} 行可疑
+                            </span>
+                          )}
+                        </div>
+                        <div className="rounded-lg border border-amber-400/20 bg-amber-500/5 p-3">
+                          {detectSuspiciousLines(item.pending_content).map((line, idx) => (
+                            <div
+                              key={idx}
+                              className={
+                                line.isSuspicious
+                                  ? 'border-l-2 border-red-500 bg-red-500/10 px-2 py-1 text-xs font-mono text-zinc-300'
+                                  : 'text-xs font-mono text-zinc-300 py-1'
+                              }
+                            >
+                              {line.text}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    <div className="prose prose-invert prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap text-xs text-zinc-300">{item.content}</pre>
+                    <div className="mt-2">
+                      {editingId === item.id ? (
+                        <textarea
+                          value={editContent}
+                          onChange={e => setEditContent(e.target.value)}
+                          className="w-full min-h-[200px] bg-zinc-900 text-zinc-300 text-xs font-mono p-3 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500"
+                        />
+                      ) : (
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <pre className="whitespace-pre-wrap text-xs text-zinc-300">{item.content}</pre>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-                <p className="mt-3 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-600">
-                  追加 {item.append_count} 次 · {new Date(item.updated_at).toLocaleString('zh-CN')}
-                </p>
-                {item.pending_content !== null && (
-                  <div className="mt-4 rounded-[16px] border border-amber-400/20 bg-amber-500/5 p-3">
-                    <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-amber-400">
-                      待审核整理提案
-                    </p>
-                    <div className="mt-2">
-                      <pre className="whitespace-pre-wrap text-xs text-zinc-300">{item.pending_content}</pre>
-                    </div>
-                    <div className="mt-3 flex gap-2">
+
+                  <p className="mt-3 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-600">
+                    追加 {item.append_count} 次 · {new Date(item.updated_at).toLocaleString('zh-CN')}
+                  </p>
+
+                  {item.pending_content !== null && (
+                    <div className="mt-4 flex gap-2">
                       <ActionButton
                         icon={FiCheck}
                         label="批准，覆盖原内容"
@@ -197,14 +289,15 @@ export function AdminSemanticDocumentsClient() {
                         onClick={() => resolveConsolidation(item.id, 'reject')}
                       />
                     </div>
-                  </div>
+                  )}
+                </div>
+
+                {error[item.id] && (
+                  <p className="mt-3 text-xs font-light tracking-wide text-red-400">{error[item.id]}</p>
                 )}
               </div>
-              {error[item.id] && (
-                <p className="mt-3 text-xs font-light tracking-wide text-red-400">{error[item.id]}</p>
-              )}
-            </div>
-          )}
+            )
+          }}
         />
       )}
     </AdminPageShell>
