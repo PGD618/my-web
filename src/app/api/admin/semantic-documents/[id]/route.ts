@@ -6,5 +6,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  return proxyToAgent(req, `/admin/semantic-documents/${id}`, { method: 'PATCH' })
+  const body = await req.json()
+  return proxyToAgent(req, `/admin/semantic-documents/${id}`, { method: 'PATCH', body })
 }
