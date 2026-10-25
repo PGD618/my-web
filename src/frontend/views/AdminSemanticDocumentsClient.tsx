@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FiFileText, FiEdit2, FiSave, FiX, FiCheck, FiAlertTriangle } from 'react-icons/fi'
+import { FiFileText, FiEdit2, FiSave, FiX, FiCheck, FiAlertTriangle, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
 import { detectSuspiciousLines } from '@/lib/detectSuspiciousLines'
+import { SemanticNarrativePanel } from '@/frontend/components/admin/SemanticNarrativePanel'
+import { formatNarrativeStats } from '@/lib/narrativeUtils'
 
 interface SemanticDocument {
   id: string
@@ -24,13 +26,20 @@ export function AdminSemanticDocumentsClient() {
   const [editContent, setEditContent] = useState<string>('')
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [error, setError] = useState<Record<string, string>>({})
+  const [narrativeStats, setNarrativeStats] = useState<string>('')
+  const [expandedLegacy, setExpandedLegacy] = useState<Set<string>>(new Set())
 
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/semantic-documents')
-      const data = await res.json()
-      setItems(data.items ?? [])
+      const [docsRes, statsRes] = await Promise.all([
+        fetch('/api/admin/semantic-documents'),
+        fetch('/api/admin/semantic-narrative-stats'),
+      ])
+      const docsData = await docsRes.json()
+      const statsData = statsRes.ok ? await statsRes.json() : {}
+      setItems(docsData.items ?? [])
+      setNarrativeStats(formatNarrativeStats(statsData))
     } catch {
       setError({ global: '加载失败' })
     } finally {
@@ -133,11 +142,23 @@ export function AdminSemanticDocumentsClient() {
     load()
   }, [])
 
+  function hasPendingContent(): boolean {
+    return items.some(item => item.pending_content !== null)
+  }
+
   return (
     <AdminPageShell icon={FiFileText} title="语义记忆文档" subtitle="Semantic Documents">
-      <div className="mb-4 rounded-lg border border-amber-400/20 bg-amber-500/5 p-3">
-        <p className="text-xs text-amber-300">自动整理已暂停，以下为历史遗留提案，建议驳回后由新流程重新整理</p>
-      </div>
+      {narrativeStats && (
+        <div className="mb-4 p-2 rounded-lg bg-zinc-900/30 border border-white/10">
+          <p className="text-xs text-zinc-400">叙事修改：{narrativeStats}</p>
+        </div>
+      )}
+
+      {hasPendingContent() && (
+        <div className="mb-4 rounded-lg border border-amber-400/20 bg-amber-500/5 p-3">
+          <p className="text-xs text-amber-300">自动整理已暂停，以下为历史遗留提案，建议驳回后由新流程重新整理</p>
+        </div>
+      )}
 
       {error.global && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error.global}</p>}
       {loading ? (
@@ -151,9 +172,42 @@ export function AdminSemanticDocumentsClient() {
             const pendingSuspicious = item.pending_content
               ? detectSuspiciousLines(item.pending_content).filter(l => l.isSuspicious)
               : []
+            const expandedLegacyItem = expandedLegacy.has(item.id)
 
             return (
-              <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4">
+              <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4 space-y-4">
+                {/* 叙事层 */}
+                <div>
+                  <p className="text-xs font-mono uppercase tracking-[0.18em] text-zinc-600 mb-3">叙事</p>
+                  <SemanticNarrativePanel docId={item.id} />
+                </div>
+
+                {/* 过渡期旧整篇正文 */}
+                <div className="border-t border-white/10 pt-4">
+                  <button
+                    onClick={() => {
+                      setExpandedLegacy(prev => {
+                        const next = new Set(prev)
+                        if (next.has(item.id)) {
+                          next.delete(item.id)
+                        } else {
+                          next.add(item.id)
+                        }
+                        return next
+                      })
+                    }}
+                    className="flex items-center gap-2 text-xs font-mono uppercase tracking-[0.18em] text-zinc-600 hover:text-zinc-500 transition"
+                  >
+                    {expandedLegacyItem ? (
+                      <FiChevronUp className="h-3 w-3" />
+                    ) : (
+                      <FiChevronDown className="h-3 w-3" />
+                    )}
+                    旧整篇正文（过渡期）
+                  </button>
+
+                  {expandedLegacyItem && (
+                    <div className="mt-3 space-y-3">
                 {contentSuspicious.length > 0 && (
                   <div className="mb-3 flex items-center gap-2 rounded-lg border border-red-400/20 bg-red-500/5 px-3 py-2">
                     <FiAlertTriangle className="h-4 w-4 text-red-400" />
@@ -295,6 +349,9 @@ export function AdminSemanticDocumentsClient() {
                 {error[item.id] && (
                   <p className="mt-3 text-xs font-light tracking-wide text-red-400">{error[item.id]}</p>
                 )}
+                    </div>
+                  )}
+                </div>
               </div>
             )
           }}
