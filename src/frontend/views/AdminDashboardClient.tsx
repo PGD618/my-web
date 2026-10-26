@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText } from 'react-icons/fi'
+import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText, FiGitMerge } from 'react-icons/fi'
 import { LogoutButton } from '@/frontend/components/admin/LogoutButton'
 
 interface Entry {
@@ -49,6 +49,13 @@ const ENTRIES: Entry[] = [
     title: '语义记忆文档',
     subtitle: 'Semantic Documents',
     countEndpoint: '/api/admin/semantic-documents',
+  },
+  {
+    href: '/admin/merge-proposals',
+    icon: FiGitMerge,
+    title: '合并提案',
+    subtitle: 'Merge Proposals',
+    countEndpoint: '/api/admin/semantic-merge-proposals',
   },
 ]
 
