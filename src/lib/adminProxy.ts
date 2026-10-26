@@ -30,7 +30,10 @@ export async function proxyToAgent(
   }
 
   try {
-    const agentResponse = await fetch(`${agentURL}${path}`, {
+    const url = new URL(`${agentURL}${path}`)
+    url.search = req.nextUrl.search
+
+    const agentResponse = await fetch(url, {
       method: init?.method ?? 'GET',
       headers: {
         'Content-Type': 'application/json',
