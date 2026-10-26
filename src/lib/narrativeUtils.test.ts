@@ -1,55 +1,35 @@
 import { describe, it, expect } from 'vitest'
-import { formatNarrativeStats, mapResultToChineseLabel } from './narrativeUtils'
+import { removeEntryMarkers } from './narrativeUtils'
 
 describe('narrativeUtils', () => {
-  describe('formatNarrativeStats', () => {
-    it('should format single kind with single result', () => {
-      const stats = { narrative: { success: 3 } }
-      expect(formatNarrativeStats(stats)).toBe('narrative 成功 3')
+  describe('removeEntryMarkers', () => {
+    it('should remove single entry marker', () => {
+      const text = 'This is [e:entry-1] a test.'
+      expect(removeEntryMarkers(text)).toBe('This is  a test.')
     })
 
-    it('should format single kind with multiple results', () => {
-      const stats = { narrative: { success: 3, missing_source: 1 } }
-      expect(formatNarrativeStats(stats)).toBe('narrative 成功 3 · 缺少来源 1')
+    it('should remove multiple entry markers', () => {
+      const text = 'First [e:entry-1] and second [e:entry-2] markers.'
+      expect(removeEntryMarkers(text)).toBe('First  and second  markers.')
     })
 
-    it('should format multiple kinds', () => {
-      const stats = {
-        narrative: { success: 3, missing_source: 1 },
-        section: { success: 2, llm_error: 1 },
-      }
-      expect(formatNarrativeStats(stats)).toContain('narrative')
-      expect(formatNarrativeStats(stats)).toContain('section')
-      expect(formatNarrativeStats(stats)).toContain('成功')
-      expect(formatNarrativeStats(stats)).toContain('缺少来源')
-      expect(formatNarrativeStats(stats)).toContain('模型出错')
+    it('should handle text with no markers', () => {
+      const text = 'This text has no markers.'
+      expect(removeEntryMarkers(text)).toBe('This text has no markers.')
     })
 
-    it('should handle empty stats', () => {
-      expect(formatNarrativeStats({})).toBe('')
+    it('should remove markers with various id formats', () => {
+      const text = 'Test [e:123] and [e:abc-def-123] and [e:entry_with_underscore].'
+      expect(removeEntryMarkers(text)).toBe('Test  and  and .')
     })
 
-    it('should fallback to English for unmapped results', () => {
-      const stats = { narrative: { unknown_result: 5 } }
-      expect(formatNarrativeStats(stats)).toBe('narrative unknown_result 5')
-    })
-  })
-
-  describe('mapResultToChineseLabel', () => {
-    it('should map success to 成功', () => {
-      expect(mapResultToChineseLabel('success')).toBe('成功')
+    it('should handle consecutive markers', () => {
+      const text = '[e:entry-1][e:entry-2] text'
+      expect(removeEntryMarkers(text)).toBe(' text')
     })
 
-    it('should map missing_source to 缺少来源', () => {
-      expect(mapResultToChineseLabel('missing_source')).toBe('缺少来源')
-    })
-
-    it('should map llm_error to 模型出错', () => {
-      expect(mapResultToChineseLabel('llm_error')).toBe('模型出错')
-    })
-
-    it('should return original value for unmapped results', () => {
-      expect(mapResultToChineseLabel('unknown')).toBe('unknown')
+    it('should handle empty string', () => {
+      expect(removeEntryMarkers('')).toBe('')
     })
   })
 })
