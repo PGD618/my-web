@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText, FiBookOpen } from 'react-icons/fi'
+import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText } from 'react-icons/fi'
 import { LogoutButton } from '@/frontend/components/admin/LogoutButton'
 
 interface Entry {
@@ -34,7 +34,6 @@ const ENTRIES: Entry[] = [
     icon: FiDatabase,
     title: '事实管理',
     subtitle: 'Confirmed Facts',
-    countEndpoint: '/api/admin/confirmed-facts',
   },
   {
     href: '/admin/profile-cards',
@@ -44,16 +43,9 @@ const ENTRIES: Entry[] = [
     countEndpoint: '/api/admin/profile-cards',
   },
   {
-    href: '/admin/semantic-documents',
+    href: '/admin/autobiography',
     icon: FiFileText,
     title: '语义记忆文档',
-    subtitle: 'Semantic Documents',
-    countEndpoint: '/api/admin/semantic-documents',
-  },
-  {
-    href: '/admin/autobiography',
-    icon: FiBookOpen,
-    title: '我的自传',
     subtitle: 'Autobiography',
   },
 ]
