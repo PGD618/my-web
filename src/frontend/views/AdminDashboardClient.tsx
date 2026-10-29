@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText } from 'react-icons/fi'
+import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText, FiBookOpen } from 'react-icons/fi'
 import { LogoutButton } from '@/frontend/components/admin/LogoutButton'
 
 interface Entry {
@@ -11,7 +11,7 @@ interface Entry {
   icon: typeof FiInbox
   title: string
   subtitle: string
-  countEndpoint: string
+  countEndpoint?: string
 }
 
 const ENTRIES: Entry[] = [
@@ -50,6 +50,12 @@ const ENTRIES: Entry[] = [
     subtitle: 'Semantic Documents',
     countEndpoint: '/api/admin/semantic-documents',
   },
+  {
+    href: '/admin/autobiography',
+    icon: FiBookOpen,
+    title: '我的自传',
+    subtitle: 'Autobiography',
+  },
 ]
 
 export function AdminDashboardClient() {
@@ -57,6 +63,7 @@ export function AdminDashboardClient() {
 
   useEffect(() => {
     ENTRIES.forEach(entry => {
+      if (!entry.countEndpoint) return
       fetch(entry.countEndpoint)
         .then(res => (res.ok ? res.json() : { items: [] }))
         .then(data => {
@@ -85,7 +92,7 @@ export function AdminDashboardClient() {
         <div className="grid gap-4 sm:grid-cols-3">
           {ENTRIES.map(entry => {
             const Icon = entry.icon
-            const count = counts[entry.href]
+            const count = entry.countEndpoint ? counts[entry.href] : undefined
             return (
               <Link
                 key={entry.href}

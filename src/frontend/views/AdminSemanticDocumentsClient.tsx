@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FiFileText, FiEdit2, FiSave, FiX, FiCheck, FiAlertTriangle, FiChevronDown, FiChevronUp } from 'react-icons/fi'
+import Link from 'next/link'
+import { FiFileText, FiEdit2, FiSave, FiX, FiCheck, FiAlertTriangle, FiArrowRight } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
 import { detectSuspiciousLines } from '@/lib/detectSuspiciousLines'
-import { getEntriesList, cleanNarrativeText, type NarrativeData, type NarrativeEntry } from '@/lib/semanticDocumentUtils'
+import { getEntriesList, filterCategoryDocuments, isExperience, type NarrativeData, type NarrativeEntry } from '@/lib/semanticDocumentUtils'
 
 interface SemanticDocument {
   id: string
@@ -17,6 +18,7 @@ interface SemanticDocument {
   created_at: string
   updated_at: string
   pending_content: string | null
+  kind?: 'category' | 'autobiography'
 }
 
 export function AdminSemanticDocumentsClient() {
@@ -27,14 +29,14 @@ export function AdminSemanticDocumentsClient() {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [error, setError] = useState<Record<string, string>>({})
   const [narrativeDataMap, setNarrativeDataMap] = useState<Record<string, NarrativeData | null>>({})
-  const [expandedNarrative, setExpandedNarrative] = useState<Set<string>>(new Set())
 
   async function load() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/semantic-documents')
       const data = await res.json()
-      const documents = data.items ?? []
+      const allDocuments: SemanticDocument[] = data.items ?? []
+      const documents = filterCategoryDocuments(allDocuments)
       setItems(documents)
 
       // 加载每篇文档的叙事数据
@@ -169,6 +171,11 @@ export function AdminSemanticDocumentsClient() {
       <div className="space-y-2">
         {entries.map(entry => (
           <div key={entry.id} className="flex items-start gap-2">
+            {isExperience(entry) && (
+              <span className="mt-0.5 inline-block px-1.5 py-0.5 text-[10px] bg-emerald-700/40 text-emerald-400 rounded">
+                经历
+              </span>
+            )}
             {!entry.is_current && (
               <span className="mt-0.5 inline-block px-1.5 py-0.5 text-[10px] bg-zinc-700/40 text-zinc-400 rounded">
                 以前认为
@@ -176,6 +183,9 @@ export function AdminSemanticDocumentsClient() {
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-zinc-300">{entry.text}</p>
+              {entry.occurred_at && (
+                <p className="text-[10px] text-zinc-600 mt-0.5">{entry.occurred_at}</p>
+              )}
               {entry.reinforcement_count > 1 && (
                 <p className="text-[11px] text-zinc-600 mt-0.5">×{entry.reinforcement_count}</p>
               )}
@@ -188,6 +198,13 @@ export function AdminSemanticDocumentsClient() {
 
   return (
     <AdminPageShell icon={FiFileText} title="语义记忆文档" subtitle="Semantic Documents">
+      <div className="mb-6 flex items-center gap-2 text-sm text-blue-300 hover:text-blue-200 transition">
+        <Link href="/admin/autobiography" className="flex items-center gap-1">
+          查看我的自传
+          <FiArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+
       {hasPendingContent() && (
         <div className="mb-4 rounded-lg border border-amber-400/20 bg-amber-500/5 p-3">
           <p className="text-xs text-amber-300">自动整理已暂停，以下为历史遗留提案，建议驳回后由新流程重新整理</p>
@@ -209,7 +226,6 @@ export function AdminSemanticDocumentsClient() {
 
             const narrativeData = narrativeDataMap[item.id]
             const entries = narrativeData ? getEntriesList(narrativeData) : []
-            const expandedNarrativeItem = expandedNarrative.has(item.id)
 
             const docTitle = item.title || item.category
 
@@ -272,50 +288,6 @@ export function AdminSemanticDocumentsClient() {
                     renderEntries(entries)
                   )}
                 </div>
-
-                {/* 叙事折叠区 */}
-                {narrativeData && (
-                  <div className="border-t border-white/10 pt-4">
-                    <button
-                      onClick={() => {
-                        setExpandedNarrative(prev => {
-                          const next = new Set(prev)
-                          if (next.has(item.id)) {
-                            next.delete(item.id)
-                          } else {
-                            next.add(item.id)
-                          }
-                          return next
-                        })
-                      }}
-                      className="flex items-center gap-2 text-xs font-mono uppercase tracking-[0.18em] text-zinc-600 hover:text-zinc-500 transition"
-                    >
-                      {expandedNarrativeItem ? (
-                        <FiChevronUp className="h-3 w-3" />
-                      ) : (
-                        <FiChevronDown className="h-3 w-3" />
-                      )}
-                      叙事
-                    </button>
-
-                    {expandedNarrativeItem && (
-                      <div className="mt-3 space-y-3 text-xs text-zinc-300">
-                        {narrativeData.sections && narrativeData.sections.length > 0 ? (
-                          narrativeData.sections.map(section => (
-                            <div key={section.id}>
-                              {section.heading && (
-                                <p className="font-medium text-zinc-200 mb-1">{section.heading}</p>
-                              )}
-                              <p className="whitespace-pre-wrap text-zinc-400">{cleanNarrativeText(section.text)}</p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-zinc-500">暂无叙事</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {/* 历史遗留提案（兼容旧数据） */}
                 {item.pending_content !== null && (
