@@ -164,7 +164,7 @@ export function AdminFactsClient() {
     <AdminPageShell icon={FiDatabase} title="事实管理" subtitle="Confirmed Facts">
       <div className="mb-6 flex items-center gap-2 text-sm text-blue-300 hover:text-blue-200 transition">
         <Link href="/admin/autobiography" className="flex items-center gap-1">
-          查看自传中的事实分类
+          查看我的自传
           <FiArrowRight className="h-3 w-3" />
         </Link>
       </div>
