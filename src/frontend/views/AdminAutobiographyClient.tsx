@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { FiBookOpen, FiRefreshCw, FiChevronDown, FiChevronUp, FiAlertTriangle } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
+import { ConfirmDialog } from '@/frontend/components/admin/ConfirmDialog'
 import { cleanNarrativeText, generateStatsText, sortSections, isExperience, type AutobiographyData } from '@/lib/semanticDocumentUtils'
 
 export function AdminAutobiographyClient() {
@@ -13,6 +14,7 @@ export function AdminAutobiographyClient() {
   const [expandedUnnarrated, setExpandedUnnarrated] = useState(false)
   const [rebuilding, setRebuilding] = useState(false)
   const [rebuildResult, setRebuildResult] = useState<{ chapters_planned: number; chapters_written: number; chapters_failed: number } | null>(null)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -38,10 +40,6 @@ export function AdminAutobiographyClient() {
   }
 
   async function handleRebuild() {
-    if (!window.confirm('会用当前条目重新生成整篇自传，主人锁定的段落保留。确认吗？')) {
-      return
-    }
-
     setRebuilding(true)
     setError(null)
     try {
@@ -50,19 +48,25 @@ export function AdminAutobiographyClient() {
       })
 
       if (!res.ok) {
-        setError(`重建失败 (${res.status})`)
+        const data = await res.json()
+        setError(`重建失败：${data.detail || res.statusText}`)
       } else {
         const result = await res.json()
-        setRebuildResult(result)
-        setTimeout(() => {
-          load()
-          setRebuildResult(null)
-        }, 1500)
+        if (result.chapters_written === 0) {
+          setError('重建没有写入任何章节，请查看服务器日志')
+        } else {
+          setRebuildResult(result)
+          setTimeout(() => {
+            load()
+            setRebuildResult(null)
+          }, 1500)
+        }
       }
     } catch {
       setError('网络错误')
     } finally {
       setRebuilding(false)
+      setShowConfirm(false)
     }
   }
 
@@ -78,7 +82,7 @@ export function AdminAutobiographyClient() {
     )
   }
 
-  if (error) {
+  if (error && !rebuildResult) {
     return (
       <AdminPageShell icon={FiBookOpen} title="我的自传" subtitle="Autobiography">
         <div className="flex items-center gap-2 rounded-lg border border-red-400/20 bg-red-500/5 px-4 py-3">
@@ -92,6 +96,16 @@ export function AdminAutobiographyClient() {
   if (!data || data.sections.length === 0) {
     return (
       <AdminPageShell icon={FiBookOpen} title="我的自传" subtitle="Autobiography">
+        <ConfirmDialog
+          isOpen={showConfirm}
+          title="重建自传"
+          message="会用当前全部条目重新生成整篇自传，锁定的段落会保留。重建需要一两分钟。"
+          cancelLabel="取消"
+          confirmLabel="确认重建"
+          isLoading={rebuilding}
+          onConfirm={handleRebuild}
+          onCancel={() => setShowConfirm(false)}
+        />
         <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-6 text-center">
           <p className="text-sm text-zinc-300 mb-4">自传还没有生成，可以点右上角重建</p>
           <div className="flex justify-center">
@@ -100,7 +114,7 @@ export function AdminAutobiographyClient() {
               label="重建自传"
               variant="primary"
               disabled={rebuilding}
-              onClick={handleRebuild}
+              onClick={() => setShowConfirm(true)}
             />
           </div>
         </div>
@@ -113,15 +127,34 @@ export function AdminAutobiographyClient() {
 
   return (
     <AdminPageShell icon={FiBookOpen} title="我的自传" subtitle="Autobiography">
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="重建自传"
+        message="会用当前全部条目重新生成整篇自传，锁定的段落会保留。重建需要一两分钟。"
+        cancelLabel="取消"
+        confirmLabel="确认重建"
+        isLoading={rebuilding}
+        onConfirm={handleRebuild}
+        onCancel={() => setShowConfirm(false)}
+      />
       <div className="absolute top-10 right-6 md:right-[5vw]">
         <ActionButton
           icon={FiRefreshCw}
           label="重建自传"
           variant="primary"
           disabled={rebuilding}
-          onClick={handleRebuild}
+          onClick={() => setShowConfirm(true)}
         />
       </div>
+
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-400/20 bg-red-500/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <FiAlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
+            <p className="text-sm text-red-300">{error}</p>
+          </div>
+        </div>
+      )}
 
       {rebuildResult && (
         <div className="mb-6 rounded-lg border border-blue-400/20 bg-blue-500/5 p-4">

@@ -6,6 +6,7 @@ import { FiDatabase, FiTrash2, FiArrowRight } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
+import { ConfirmDialog } from '@/frontend/components/admin/ConfirmDialog'
 import { isExperience, type NarrativeEntry } from '@/lib/semanticDocumentUtils'
 
 interface FactEntry extends NarrativeEntry {
@@ -35,6 +36,7 @@ export function AdminFactsClient() {
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [error, setError] = useState<Record<string, string>>({})
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   async function load() {
     setLoading(true)
@@ -58,10 +60,6 @@ export function AdminFactsClient() {
   }, [])
 
   async function handleDelete(factId: string) {
-    if (!window.confirm('确认删除此事实吗？')) {
-      return
-    }
-
     setProcessingId(factId)
     setError(prev => {
       const next = { ...prev }
@@ -86,12 +84,12 @@ export function AdminFactsClient() {
         setError(prev => ({ ...prev, [factId]: `删除失败（${res.status}）` }))
         return
       }
-      // Reload after deletion
       await load()
     } catch {
       setError(prev => ({ ...prev, [factId]: '删除失败，请重试' }))
     } finally {
       setProcessingId(null)
+      setConfirmDeleteId(null)
     }
   }
 
@@ -148,7 +146,7 @@ export function AdminFactsClient() {
                 label="删除"
                 variant="danger"
                 disabled={processingId === fact.id}
-                onClick={() => handleDelete(fact.id)}
+                onClick={() => setConfirmDeleteId(fact.id)}
               />
             </div>
             {error[fact.id] && (
@@ -162,6 +160,21 @@ export function AdminFactsClient() {
 
   return (
     <AdminPageShell icon={FiDatabase} title="事实管理" subtitle="Confirmed Facts">
+      <ConfirmDialog
+        isOpen={confirmDeleteId !== null}
+        title="删除事实"
+        message="确认删除此事实吗？"
+        cancelLabel="取消"
+        confirmLabel="删除"
+        isDangerous={true}
+        isLoading={processingId === confirmDeleteId}
+        onConfirm={() => {
+          if (confirmDeleteId) {
+            handleDelete(confirmDeleteId)
+          }
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
       <div className="mb-6 flex items-center gap-2 text-sm text-blue-300 hover:text-blue-200 transition">
         <Link href="/admin/autobiography" className="flex items-center gap-1">
           查看我的自传
