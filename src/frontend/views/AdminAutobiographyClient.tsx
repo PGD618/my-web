@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FiBookOpen, FiRefreshCw, FiChevronDown, FiChevronUp, FiAlertTriangle } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
@@ -10,29 +10,32 @@ import { cleanNarrativeText, generateStatsText, sortSections, isExperience, type
 export function AdminAutobiographyClient() {
   const [data, setData] = useState<AutobiographyData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // 加载失败才整页显示错误；重建失败只在正文上方内联提示，正文保留
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [expandedUnnarrated, setExpandedUnnarrated] = useState(false)
   const [rebuilding, setRebuilding] = useState(false)
   const [rebuildResult, setRebuildResult] = useState<{ chapters_planned: number; chapters_written: number; chapters_failed: number } | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   async function load() {
     setLoading(true)
-    setError(null)
+    setLoadError(null)
     try {
       const res = await fetch('/api/admin/autobiography')
       if (res.status === 404) {
-        setError('自传页面不存在')
+        setLoadError('自传页面不存在')
         setData(null)
       } else if (!res.ok) {
-        setError(`加载失败 (${res.status})`)
+        setLoadError(`加载失败 (${res.status})`)
         setData(null)
       } else {
         const result = await res.json()
         setData(result)
       }
     } catch {
-      setError('网络错误')
+      setLoadError('网络错误')
       setData(null)
     } finally {
       setLoading(false)
@@ -41,29 +44,31 @@ export function AdminAutobiographyClient() {
 
   async function handleRebuild() {
     setRebuilding(true)
-    setError(null)
+    setActionError(null)
     try {
       const res = await fetch('/api/admin/autobiography/rebuild', {
         method: 'POST',
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        setError(`重建失败：${data.detail || res.statusText}`)
+        const data = await res.json().catch(() => ({}))
+        setActionError(`重建失败：${data.detail || res.statusText}`)
       } else {
         const result = await res.json()
         if (result.chapters_written === 0) {
-          setError('重建没有写入任何章节，请查看服务器日志')
+          setActionError('重建没有写入任何章节，请查看服务器日志')
         } else {
           setRebuildResult(result)
-          setTimeout(() => {
+          if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
+          reloadTimerRef.current = setTimeout(() => {
+            reloadTimerRef.current = null
             load()
             setRebuildResult(null)
           }, 1500)
         }
       }
     } catch {
-      setError('网络错误')
+      setActionError('网络错误')
     } finally {
       setRebuilding(false)
       setShowConfirm(false)
@@ -72,7 +77,19 @@ export function AdminAutobiographyClient() {
 
   useEffect(() => {
     load()
+    return () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
+    }
   }, [])
+
+  const actionErrorBlock = actionError && (
+    <div className="mb-6 rounded-lg border border-red-400/20 bg-red-500/5 px-4 py-3">
+      <div className="flex items-center gap-2">
+        <FiAlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
+        <p className="text-sm text-red-300">{actionError}</p>
+      </div>
+    </div>
+  )
 
   if (loading) {
     return (
@@ -82,12 +99,15 @@ export function AdminAutobiographyClient() {
     )
   }
 
-  if (error && !rebuildResult) {
+  if (loadError) {
     return (
       <AdminPageShell icon={FiBookOpen} title="我的自传" subtitle="Autobiography">
-        <div className="flex items-center gap-2 rounded-lg border border-red-400/20 bg-red-500/5 px-4 py-3">
-          <FiAlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
-          <p className="text-sm text-red-300">{error}</p>
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-red-400/20 bg-red-500/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <FiAlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
+            <p className="text-sm text-red-300">{loadError}</p>
+          </div>
+          <ActionButton icon={FiRefreshCw} label="重试" onClick={load} />
         </div>
       </AdminPageShell>
     )
@@ -106,6 +126,7 @@ export function AdminAutobiographyClient() {
           onConfirm={handleRebuild}
           onCancel={() => setShowConfirm(false)}
         />
+        {actionErrorBlock}
         <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-6 text-center">
           <p className="text-sm text-zinc-300 mb-4">自传还没有生成，可以点右上角重建</p>
           <div className="flex justify-center">
@@ -147,14 +168,7 @@ export function AdminAutobiographyClient() {
         />
       </div>
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-red-400/20 bg-red-500/5 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <FiAlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
-            <p className="text-sm text-red-300">{error}</p>
-          </div>
-        </div>
-      )}
+      {actionErrorBlock}
 
       {rebuildResult && (
         <div className="mb-6 rounded-lg border border-blue-400/20 bg-blue-500/5 p-4">

@@ -1,5 +1,1 @@
-import { AdminAutobiographyView } from '@/frontend/views/AdminAutobiographyView'
-
-export default function AdminAutobiographyPage() {
-  return <AdminAutobiographyView />
-}
+export { default } from '@/frontend/views/AdminAutobiographyPage'

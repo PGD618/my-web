@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { FiAlertTriangle, FiCheck } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
@@ -40,11 +41,20 @@ export function AdminDisputedFactsClient() {
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const router = useRouter()
 
   async function load() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/disputed-facts')
+      if (res.status === 401 || res.status === 403) {
+        router.push('/admin/login')
+        return
+      }
+      if (!res.ok) {
+        setError(`加载失败（${res.status}）`)
+        return
+      }
       const data = await res.json()
       setPairs(pairUpDisputes(data.items ?? []))
     } catch {

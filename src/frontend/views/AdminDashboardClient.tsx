@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText } from 'react-icons/fi'
 import { LogoutButton } from '@/frontend/components/admin/LogoutButton'
@@ -52,18 +53,28 @@ const ENTRIES: Entry[] = [
 
 export function AdminDashboardClient() {
   const [counts, setCounts] = useState<Record<string, number>>({})
+  const [error, setError] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
     ENTRIES.forEach(entry => {
       if (!entry.countEndpoint) return
       fetch(entry.countEndpoint)
-        .then(res => (res.ok ? res.json() : { items: [] }))
-        .then(data => {
+        .then(async res => {
+          if (res.status === 401 || res.status === 403) {
+            router.push('/admin/login')
+            return
+          }
+          if (!res.ok) {
+            setError(`部分计数加载失败（${res.status}）`)
+            return
+          }
+          const data = await res.json()
           setCounts(prev => ({ ...prev, [entry.href]: data.items?.length ?? 0 }))
         })
-        .catch(() => {})
+        .catch(() => setError('部分计数加载失败'))
     })
-  }, [])
+  }, [router])
 
   return (
     <div className="relative h-full overflow-hidden bg-zinc-950 px-6 py-10 md:px-[5vw]">
@@ -80,6 +91,8 @@ export function AdminDashboardClient() {
           <h1 className="text-sm font-bold tracking-wide text-white">管理后台</h1>
           <LogoutButton />
         </div>
+
+        {error && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error}</p>}
 
         <div className="grid gap-4 sm:grid-cols-3">
           {ENTRIES.map(entry => {
