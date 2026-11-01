@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcrypt'
-import { signSessionToken, ADMIN_SESSION_COOKIE } from '@/lib/auth'
+import { signSessionToken, ADMIN_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from '@/lib/auth'
 import { clearAttempts, getClientKey, isRateLimited, recordFailedAttempt } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 7 * 24 * 60 * 60,
+    maxAge: SESSION_MAX_AGE_SECONDS,
   })
   return response
 }

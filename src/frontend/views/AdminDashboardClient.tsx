@@ -12,6 +12,7 @@ interface Entry {
   icon: typeof FiInbox
   title: string
   subtitle: string
+  description?: string
   countEndpoint?: string
 }
 
@@ -48,6 +49,7 @@ const ENTRIES: Entry[] = [
     icon: FiFileText,
     title: '语义记忆文档',
     subtitle: 'Autobiography',
+    description: '以自传形式整理的长期记忆',
   },
 ]
 
@@ -118,6 +120,9 @@ export function AdminDashboardClient() {
                 <p className="mb-4 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-600">
                   {entry.subtitle}
                 </p>
+                {entry.description && (
+                  <p className="-mt-2 mb-4 text-xs font-light tracking-wide text-zinc-500">{entry.description}</p>
+                )}
                 <div className="flex items-center gap-1 text-xs font-light tracking-wide text-zinc-500 transition-colors group-hover:text-blue-300">
                   查看
                   <FiArrowRight className="h-3 w-3" />

@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server'
 import { SignJWT, jwtVerify } from 'jose'
 
 const COOKIE_NAME = 'admin_session'
-const SESSION_DURATION = '7d'
+/** 登录会话时长（秒），JWT 过期时间和 cookie maxAge 共用，改一处即可 */
+export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 
 function getSecretKey() {
   const secret = process.env.JWT_SECRET
@@ -16,7 +17,7 @@ export async function signSessionToken(): Promise<string> {
   return new SignJWT({ role: 'owner' })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime(SESSION_DURATION)
+    .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
     .sign(getSecretKey())
 }
 
