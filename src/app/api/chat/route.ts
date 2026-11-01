@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getRole } from '@/lib/auth'
+import { fetchAgent } from '@/lib/agentClient'
 import type { ChatRequest } from '@/components/AIPet/types'
 
 export async function POST(req: NextRequest) {
@@ -27,24 +28,10 @@ export async function POST(req: NextRequest) {
     // 原样转发给 agent 接到 LLM 调用的 messages 里，不再在这一层砍掉。
     const history = messages.slice(0, lastUserIndex)
 
-    const agentURL = process.env.AI_AGENT_URL
-    if (!agentURL) {
-      throw new Error('Missing AI_AGENT_URL environment variable')
-    }
-
-    const serviceToken = process.env.AI_AGENT_SERVICE_TOKEN
-    if (!serviceToken) {
-      throw new Error('Missing AI_AGENT_SERVICE_TOKEN environment variable')
-    }
-
     const role = await getRole(req)
 
-    const agentResponse = await fetch(`${agentURL}/chat`, {
+    const agentResponse = await fetchAgent('/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Service-Token': serviceToken,
-      },
       body: JSON.stringify({ message: lastUserMessage.content, role, history }),
     })
 
