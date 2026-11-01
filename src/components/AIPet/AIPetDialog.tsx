@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
+import { EASE_OUT } from '@/frontend/shared/motion'
+import { PageGlow } from '@/frontend/shared/PageGlow'
 import { FiX, FiArrowUp, FiCopy, FiCheck } from 'react-icons/fi'
 import { PERSONA, IDLE_FRAMES, FRAME_DURATION } from './persona'
 import { useFrameAnimation } from './useFrameAnimation'
@@ -221,13 +223,12 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
             initial={{ opacity: 0, y: 24, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: 0.45, ease: EASE_OUT }}
             onClick={e => e.stopPropagation()}
             className="relative w-full max-w-2xl h-[min(640px,85vh)] flex flex-col overflow-hidden rounded-[32px] sm:rounded-[40px] border border-white/5 bg-zinc-900/60 backdrop-blur-xl shadow-2xl shadow-black/60"
           >
             {/* 氛围光斑，沿用首页的处理 */}
-            <div className="pointer-events-none absolute -top-[20%] -left-[15%] h-[55%] w-[55%] rounded-full bg-blue-500/10 blur-[110px]" />
-            <div className="pointer-events-none absolute -bottom-[20%] -right-[15%] h-[55%] w-[55%] rounded-full bg-purple-500/10 blur-[110px]" />
+            <PageGlow variant="dialog" />
 
             {/* ═══ 头部 ═══ */}
             <header className="relative z-10 flex items-center justify-between gap-4 px-6 sm:px-8 py-5 border-b border-white/5">
@@ -273,7 +274,7 @@ export function AIPetDialog({ isOpen, onClose }: AIPetDialogProps) {
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                  transition={{ duration: 0.6, delay: 0.15, ease: EASE_OUT }}
                   className="flex h-full flex-col items-center justify-center gap-6 text-center"
                 >
                   <div className="h-28 w-28 opacity-90 drop-shadow-[0_8px_30px_rgba(59,130,246,0.25)]">

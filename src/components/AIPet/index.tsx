@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { EASE_OUT } from '@/frontend/shared/motion'
 import { AIPetDialog } from './AIPetDialog'
 import { PERSONA, IDLE_FRAMES, FRAME_DURATION } from './persona'
 import { useFrameAnimation } from './useFrameAnimation'
@@ -25,7 +26,7 @@ export function AIPet() {
         aria-label={PERSONA.bubble}
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.6, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.8, delay: 0.6, ease: EASE_OUT }}
         onClick={() => setIsOpen(true)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

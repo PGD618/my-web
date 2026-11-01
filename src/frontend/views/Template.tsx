@@ -1,5 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
+import { EASE_OUT } from '@/frontend/shared/motion'
 
 export default function Template({ children }: { children: React.ReactNode }) {
   return (
@@ -8,7 +9,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       transition={{
         duration: 0.5,
-        ease: [0.23, 1, 0.32, 1],
+        ease: EASE_OUT,
       }}
       className="h-full w-full"
     >

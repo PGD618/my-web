@@ -1,20 +1,12 @@
 ﻿'use client'
 
-import { motion, Variants } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { staggerContainer, fadeUpItem } from '@/frontend/shared/motion'
+import { PageGlow } from '@/frontend/shared/PageGlow'
 import { FiBriefcase, FiBookOpen, FiCalendar, FiMapPin, FiUsers, FiCode } from 'react-icons/fi'
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.15 },
-  },
-}
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] } },
-}
+const containerVariants = staggerContainer({ stagger: 0.1, delay: 0.15 })
+const itemVariants = fadeUpItem({ offset: 24, duration: 0.6 })
 
 interface Experience {
   period: string
@@ -100,8 +92,7 @@ const typeConfig = {
 export default function ExperiencePage() {
   return (
     <div className="relative h-full overflow-y-auto overflow-x-hidden bg-zinc-950 custom-scrollbar">
-      <div className="pointer-events-none fixed -top-[15%] -left-[10%] h-[45%] w-[45%] rounded-full bg-blue-500/5 blur-[150px] z-0" />
-      <div className="pointer-events-none fixed -bottom-[15%] -right-[10%] h-[45%] w-[45%] rounded-full bg-purple-500/5 blur-[150px] z-0" />
+      <PageGlow variant="experience" />
 
       <motion.div
         variants={containerVariants}

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { EASE_OUT } from '@/frontend/shared/motion'
+import { PageGlow } from '@/frontend/shared/PageGlow'
 import { FiLock, FiArrowRight } from 'react-icons/fi'
 
 export default function AdminLoginPage() {
@@ -39,13 +41,12 @@ export default function AdminLoginPage() {
 
   return (
     <div className="relative flex h-full items-center justify-center overflow-hidden bg-zinc-950 px-6">
-      <div className="pointer-events-none absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-purple-500/10 blur-[120px]" />
+      <PageGlow variant="admin" />
 
       <motion.form
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.6, ease: EASE_OUT }}
         onSubmit={handleSubmit}
         className="relative z-10 w-full max-w-sm rounded-[32px] border border-white/5 bg-zinc-900/60 p-8 backdrop-blur-xl shadow-2xl shadow-black/60"
       >

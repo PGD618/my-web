@@ -1,21 +1,13 @@
 'use client'
 
-import { motion, Variants } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { staggerContainer, fadeUpItem } from '@/frontend/shared/motion'
+import { PageGlow } from '@/frontend/shared/PageGlow'
 import { FiGithub, FiMail, FiMapPin, FiMusic, FiCode, FiHeart, FiUsers, FiTarget, FiMessageCircle, FiSend } from 'react-icons/fi'
 import { SiWechat } from 'react-icons/si'
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.15 },
-  },
-}
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] } },
-}
+const containerVariants = staggerContainer({ stagger: 0.08, delay: 0.15 })
+const itemVariants = fadeUpItem({ offset: 20, duration: 0.6 })
 
 // 粉龄基准：2026 年为 12 年许嵩老粉 / 10 年林俊杰粉，之后每年 +1
 const FAN_YEARS_BASE_YEAR = 2026
@@ -46,8 +38,7 @@ export default function AboutPage() {
   return (
     <div className="relative h-full overflow-y-auto overflow-x-hidden bg-zinc-950 custom-scrollbar">
       {/* Background effects */}
-      <div className="pointer-events-none fixed -top-[20%] -left-[10%] h-[50%] w-[50%] rounded-full bg-purple-500/5 blur-[150px] z-0" />
-      <div className="pointer-events-none fixed -bottom-[20%] -right-[10%] h-[50%] w-[50%] rounded-full bg-blue-500/5 blur-[150px] z-0" />
+      <PageGlow variant="about" />
 
       <motion.div
         variants={containerVariants}

@@ -1,32 +1,14 @@
 ﻿'use client'
 
-import { motion, Variants } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { staggerContainer, fadeUpItem } from '@/frontend/shared/motion'
+import { PageGlow } from '@/frontend/shared/PageGlow'
 import { FiZap, FiArrowRight, FiCode, FiBriefcase, FiUser } from 'react-icons/fi'
 import { SiGithub, SiGmail } from 'react-icons/si'
 import Link from 'next/link'
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.23, 1, 0.32, 1],
-    },
-  },
-}
+const containerVariants = staggerContainer({ stagger: 0.1, delay: 0.2 })
+const itemVariants = fadeUpItem({ offset: 20, duration: 0.8 })
 
 const navCards = [
   { name: '项目', tag: '代表作品 · 实习与竞赛项目', href: '/projects', icon: FiCode, bg: 'from-blue-600/20 to-cyan-600/10' },
@@ -36,8 +18,7 @@ const navCards = [
 export default function HomePage() {
   return (
     <div className="relative h-full overflow-y-auto overflow-x-hidden bg-zinc-950 px-6 md:px-[5vw] py-[8vh] custom-scrollbar">
-      <div className="pointer-events-none absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-blue-500/10 blur-[120px] z-0" />
-      <div className="pointer-events-none absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-purple-500/10 blur-[120px] z-0" />
+      <PageGlow variant="home" />
       <div
         className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 pointer-events-none z-0"
         style={{ backgroundRepeat: 'repeat' }}

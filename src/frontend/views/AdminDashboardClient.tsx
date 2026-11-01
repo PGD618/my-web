@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { EASE_OUT } from '@/frontend/shared/motion'
+import { PageGlow } from '@/frontend/shared/PageGlow'
 import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText } from 'react-icons/fi'
 import { LogoutButton } from '@/frontend/components/admin/LogoutButton'
 import { ErrorBanner } from '@/frontend/components/admin/ErrorBanner'
@@ -79,13 +81,12 @@ export function AdminDashboardClient() {
 
   return (
     <div className="relative h-full overflow-hidden bg-zinc-950 px-6 py-10 md:px-[5vw]">
-      <div className="pointer-events-none absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-purple-500/10 blur-[120px]" />
+      <PageGlow variant="admin" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.6, ease: EASE_OUT }}
         className="relative z-10 mx-auto max-w-3xl"
       >
         <div className="mb-8 flex items-center justify-between">
