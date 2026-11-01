@@ -1,13 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getRole } from '@/lib/auth'
-
-interface ChatRequest {
-  messages: Array<{
-    role: 'user' | 'assistant'
-    content: string
-    timestamp?: string
-  }>
-}
+import type { ChatRequest } from '@/components/AIPet/types'
 
 export async function POST(req: NextRequest) {
   try {

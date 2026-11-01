@@ -7,20 +7,7 @@ import { FiX, FiArrowUp, FiCopy, FiCheck } from 'react-icons/fi'
 import { PERSONA, IDLE_FRAMES, FRAME_DURATION } from './persona'
 import { useFrameAnimation } from './useFrameAnimation'
 import { createSSEParser } from './parseSSE'
-
-interface IntentSegment {
-  type: 'fact_input' | 'retrieval' | 'chitchat'
-  content: string
-}
-
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-  segments?: IntentSegment[]  // 结构化模式
-  // ISO8601，agent 侧会话护栏（超过 2 小时未活动自动重置）用它判断时长，
-  // 见 my-web-agent/src/agent/memory/short_term.py。
-  timestamp?: string
-}
+import type { ChatMessage as Message, IntentSegment } from './types'
 
 interface AIPetDialogProps {
   isOpen: boolean

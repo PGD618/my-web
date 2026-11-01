@@ -6,14 +6,7 @@ import { FiInbox, FiCheck, FiX } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
-
-interface PendingObservation {
-  id: string
-  content: string
-  source_excerpt: string
-  category: string
-  created_at: string
-}
+import type { PendingObservation } from '@/lib/adminTypes'
 
 export function AdminPendingObservationsClient() {
   const [items, setItems] = useState<PendingObservation[]>([])

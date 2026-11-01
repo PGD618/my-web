@@ -6,19 +6,7 @@ import { FiUser, FiTrash2 } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
-
-interface ProfileCard {
-  id: string
-  key: string
-  value: string
-  source: string
-  updated_at: string
-}
-
-interface ProfileCardGroup {
-  key: string
-  entries: ProfileCard[]
-}
+import type { ProfileCard, ProfileCardGroup } from '@/lib/adminTypes'
 
 function groupByKey(items: ProfileCard[]): ProfileCardGroup[] {
   const groups = new Map<string, ProfileCard[]>()

@@ -5,7 +5,8 @@ import { FiBookOpen, FiRefreshCw, FiChevronDown, FiChevronUp, FiAlertTriangle } 
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
 import { ConfirmDialog } from '@/frontend/components/admin/ConfirmDialog'
-import { cleanNarrativeText, generateStatsText, sortSections, isExperience, type AutobiographyData } from '@/lib/semanticDocumentUtils'
+import { cleanNarrativeText, generateStatsText, sortSections, isExperience, type AutobiographyData } from '@/lib/autobiography'
+import type { AutobiographyRebuildResult } from '@/lib/adminTypes'
 
 export function AdminAutobiographyClient() {
   const [data, setData] = useState<AutobiographyData | null>(null)
@@ -15,7 +16,7 @@ export function AdminAutobiographyClient() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [expandedUnnarrated, setExpandedUnnarrated] = useState(false)
   const [rebuilding, setRebuilding] = useState(false)
-  const [rebuildResult, setRebuildResult] = useState<{ chapters_planned: number; chapters_written: number; chapters_failed: number } | null>(null)
+  const [rebuildResult, setRebuildResult] = useState<AutobiographyRebuildResult | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 

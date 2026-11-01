@@ -11,15 +11,6 @@ export function getNote(slug: string): Note | undefined {
   return notes.find((n: Note) => n.slug === slug)
 }
 
-export function getRecentNotes(count: number = 4): Note[] {
-  return [...notes]
-    .sort(
-      (a: Note, b: Note) =>
-        new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
-    )
-    .slice(0, count)
-}
-
 export function getBacklinks(note: Note): Note[] {
   return notes.filter(
     (n: Note) =>
@@ -101,14 +92,4 @@ export function getNotesByTag(tag: string): Note[] {
 // 获取置顶笔记
 export function getPinnedNotes(): Note[] {
   return notes.filter((n: Note) => n.pinned)
-}
-
-// 按分类获取笔记列表
-export function getNotesByCategory(category: string): Note[] {
-  return notes.filter((n: Note) => n.category === category)
-}
-
-// 获取所有唯一的标签名
-export function getTagNames(): string[] {
-  return getAllTags().map((t) => t.name)
 }

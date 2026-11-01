@@ -10,15 +10,12 @@ vi.mock('content', () => ({
 import {
   getAllNotes,
   getNote,
-  getRecentNotes,
   getBacklinks,
   getGraphData,
   getNotesStats,
   getAllTags,
   getNotesByTag,
-  getTagNames,
   getPinnedNotes,
-  getNotesByCategory,
 } from '../notes'
 
 describe('getAllNotes', () => {
@@ -37,32 +34,6 @@ describe('getNote', () => {
 
   it('不存在的 slug 返回 undefined', () => {
     expect(getNote('nonexistent/slug')).toBeUndefined()
-  })
-})
-
-describe('getRecentNotes', () => {
-  it('默认返回 4 条笔记', () => {
-    const result = getRecentNotes()
-    expect(result).toHaveLength(4)
-  })
-
-  it('按 lastModified 降序排列', () => {
-    const result = getRecentNotes()
-    expect(result[0].title).toBe('Docker 入门') // 2024-03-25
-    expect(result[1].title).toBe('TypeScript 基础') // 2024-03-20
-    expect(result[2].title).toBe('React Hooks') // 2024-03-15
-    expect(result[3].title).toBe('Go 并发编程') // 2024-03-10
-  })
-
-  it('支持自定义数量', () => {
-    const result = getRecentNotes(2)
-    expect(result).toHaveLength(2)
-    expect(result[0].title).toBe('Docker 入门')
-  })
-
-  it('数量超过笔记总数时返回全部', () => {
-    const result = getRecentNotes(10)
-    expect(result).toHaveLength(5)
   })
 })
 
@@ -190,16 +161,6 @@ describe('getNotesByTag', () => {
   })
 })
 
-describe('getTagNames', () => {
-  it('返回所有唯一标签名', () => {
-    const names = getTagNames()
-    // react, hooks, frontend, typescript, go, concurrency, docker, devops
-    expect(names).toHaveLength(8)
-    expect(names).toContain('frontend')
-    expect(names).toContain('react')
-  })
-})
-
 describe('getPinnedNotes', () => {
   it('返回所有置顶笔记', () => {
     const pinned = getPinnedNotes()
@@ -210,19 +171,5 @@ describe('getPinnedNotes', () => {
   it('只返回 pinned 为 true 的笔记', () => {
     const pinned = getPinnedNotes()
     expect(pinned.every(n => n.pinned)).toBe(true)
-  })
-})
-
-describe('getNotesByCategory', () => {
-  it('返回指定分类的笔记', () => {
-    const result = getNotesByCategory('frontend')
-    expect(result).toHaveLength(2)
-    const titles = result.map(n => n.title)
-    expect(titles).toContain('React Hooks')
-    expect(titles).toContain('TypeScript 基础')
-  })
-
-  it('不存在的分类返回空数组', () => {
-    expect(getNotesByCategory('nonexistent')).toHaveLength(0)
   })
 })

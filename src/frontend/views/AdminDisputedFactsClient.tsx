@@ -6,18 +6,7 @@ import { FiAlertTriangle, FiCheck } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
-
-interface ConfirmedFact {
-  id: string
-  content: string
-  category: string
-  disputes_with_id: string | null
-}
-
-interface DisputePair {
-  a: ConfirmedFact
-  b: ConfirmedFact
-}
+import type { ConfirmedFact, DisputePair } from '@/lib/adminTypes'
 
 function pairUpDisputes(items: ConfirmedFact[]): DisputePair[] {
   const byId = new Map(items.map(item => [item.id, item]))

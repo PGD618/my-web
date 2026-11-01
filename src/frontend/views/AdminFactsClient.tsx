@@ -7,32 +7,11 @@ import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
 import { ConfirmDialog } from '@/frontend/components/admin/ConfirmDialog'
-import { isExperience, type NarrativeEntry } from '@/lib/semanticDocumentUtils'
-
-interface FactEntry extends NarrativeEntry {
-  kind?: 'opinion' | 'experience'
-}
-
-interface FactItem {
-  id: string
-  text: string
-  status: string
-  created_at: string
-  updated_at: string
-}
-
-interface CategoryData {
-  category: string
-  entries: FactEntry[]
-  facts: FactItem[]
-}
-
-interface FactCategoriesResponse {
-  categories: CategoryData[]
-}
+import { isExperience, type NarrativeEntry } from '@/lib/autobiography'
+import type { CategoryFact, FactCategory, FactCategoriesResponse, ReferencedFact } from '@/lib/adminTypes'
 
 export function AdminFactsClient() {
-  const [categories, setCategories] = useState<CategoryData[]>([])
+  const [categories, setCategories] = useState<FactCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [error, setError] = useState<Record<string, string>>({})
@@ -71,11 +50,11 @@ export function AdminFactsClient() {
       const res = await fetch(`/api/admin/confirmed-facts/${factId}`, { method: 'DELETE' })
       if (res.status === 409) {
         const data = await res.json()
-        const referencedBy = data.detail?.referenced_by ?? []
+        const referencedBy: ReferencedFact[] = data.detail?.referenced_by ?? []
         setError(prev => ({
           ...prev,
           [factId]: `被 ${referencedBy.length} 条记录引用，无法删除：${referencedBy
-            .map((f: { content: string }) => f.content)
+            .map(f => f.content)
             .join('；')}`,
         }))
         return
@@ -93,7 +72,7 @@ export function AdminFactsClient() {
     }
   }
 
-  function renderEntries(entries: FactEntry[]): React.ReactNode {
+  function renderEntries(entries: NarrativeEntry[]): React.ReactNode {
     if (entries.length === 0) {
       return <p className="text-xs text-zinc-500">暂无条目</p>
     }
@@ -127,7 +106,7 @@ export function AdminFactsClient() {
     )
   }
 
-  function renderFacts(facts: FactItem[]): React.ReactNode {
+  function renderFacts(facts: CategoryFact[]): React.ReactNode {
     if (facts.length === 0) {
       return null
     }
