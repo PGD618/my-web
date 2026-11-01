@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { IconType } from 'react-icons'
+import { Tooltip } from './Tooltip'
 
 interface ActionButtonProps {
   icon: IconType
@@ -39,18 +40,7 @@ export function ActionButton({ icon: Icon, label, variant = 'primary', disabled,
       >
         <Icon className="h-[18px] w-[18px]" />
       </button>
-      <div
-        className={`
-          absolute bottom-full mb-2 px-3 py-1.5 rounded-lg
-          bg-zinc-900/95 border border-zinc-800/60 backdrop-blur-lg
-          text-[11px] font-medium text-zinc-200 whitespace-nowrap
-          transition-all duration-200 ease-out pointer-events-none z-50
-          ${show && !disabled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}
-        `}
-      >
-        {label}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-900/95" />
-      </div>
+      <Tooltip visible={show && !disabled}>{label}</Tooltip>
     </div>
   )
 }

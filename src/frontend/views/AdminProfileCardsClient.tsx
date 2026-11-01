@@ -1,11 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { FiUser, FiTrash2 } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
+import { AdminCard } from '@/frontend/components/admin/AdminCard'
+import { ConfirmDialog } from '@/frontend/components/admin/ConfirmDialog'
+import { ErrorBanner } from '@/frontend/components/admin/ErrorBanner'
+import { LoadingText } from '@/frontend/components/admin/LoadingText'
+import { useAdminMutation, useAdminResource } from '@/frontend/hooks/useAdminResource'
 import type { ProfileCard, ProfileCardGroup } from '@/lib/adminTypes'
 
 function groupByKey(items: ProfileCard[]): ProfileCardGroup[] {
@@ -19,73 +23,54 @@ function groupByKey(items: ProfileCard[]): ProfileCardGroup[] {
 }
 
 export function AdminProfileCardsClient() {
-  const [items, setItems] = useState<ProfileCard[]>([])
-  const [loading, setLoading] = useState(true)
-  const [processingId, setProcessingId] = useState<string | null>(null)
-  const [error, setError] = useState<Record<string, string>>({})
-  const router = useRouter()
-
-  async function load() {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/admin/profile-cards')
-      if (res.status === 401 || res.status === 403) {
-        router.push('/admin/login')
-        return
-      }
-      if (!res.ok) {
-        setError({ global: `加载失败（${res.status}）` })
-        return
-      }
-      const data = await res.json()
-      setItems(data.items ?? [])
-    } catch {
-      setError({ global: '加载失败' })
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { data, setData, loading, error } = useAdminResource<ProfileCard[]>(
+    '/api/admin/profile-cards',
+    json => json.items ?? []
+  )
+  const { processingId, errors, run } = useAdminMutation()
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   async function handleDelete(id: string) {
-    setProcessingId(id)
-    setError(prev => ({ ...prev, [id]: '' }))
-
-    try {
-      const res = await fetch(`/api/admin/profile-cards/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        setError(prev => ({ ...prev, [id]: data.error || '删除失败' }))
-        return
-      }
-
-      setItems(prev => prev.filter(item => item.id !== id))
-    } catch {
-      setError(prev => ({ ...prev, [id]: '网络错误' }))
-    } finally {
-      setProcessingId(null)
-    }
+    await run(id, () => fetch(`/api/admin/profile-cards/${encodeURIComponent(id)}`, { method: 'DELETE' }), {
+      onError: async res => {
+        const body = await res.json().catch(() => ({}))
+        return body.error || '删除失败'
+      },
+      networkError: '网络错误',
+      onSuccess: () => setData(prev => (prev ?? []).filter(item => item.id !== id)),
+    })
+    setConfirmDeleteId(null)
   }
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  const groups = groupByKey(items)
+  const groups = groupByKey(data ?? [])
 
   return (
     <AdminPageShell icon={FiUser} title="个人信息槽位" subtitle="Profile Cards">
-      {error.global && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error.global}</p>}
+      <ConfirmDialog
+        isOpen={confirmDeleteId !== null}
+        title="删除个人信息"
+        message="确认删除这条个人信息吗？"
+        cancelLabel="取消"
+        confirmLabel="删除"
+        isDangerous={true}
+        isLoading={processingId === confirmDeleteId}
+        onConfirm={() => {
+          if (confirmDeleteId) {
+            handleDelete(confirmDeleteId)
+          }
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+      <ErrorBanner message={error} />
       {loading ? (
-        <p className="text-xs font-light tracking-wide text-zinc-500">加载中…</p>
+        <LoadingText />
       ) : (
         <ReviewList
           items={groups}
+          getKey={group => group.key}
           emptyLabel="暂无个人信息"
           renderItem={group => (
-            <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4">
+            <AdminCard className="p-4">
               <p className="text-sm font-medium text-zinc-400">{group.key}</p>
               <div className="mt-2 space-y-3">
                 {group.entries.map(entry => (
@@ -95,21 +80,19 @@ export function AdminProfileCardsClient() {
                       <p className="mt-2 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-600">
                         {entry.source} · {new Date(entry.updated_at).toLocaleString('zh-CN')}
                       </p>
-                      {error[entry.id] && (
-                        <p className="mt-2 text-xs font-light tracking-wide text-red-400">{error[entry.id]}</p>
-                      )}
+                      <ErrorBanner message={errors[entry.id]} className="mt-2" />
                     </div>
                     <ActionButton
                       icon={FiTrash2}
                       label="删除"
                       variant="danger"
                       disabled={processingId === entry.id}
-                      onClick={() => handleDelete(entry.id)}
+                      onClick={() => setConfirmDeleteId(entry.id)}
                     />
                   </div>
                 ))}
               </div>
-            </div>
+            </AdminCard>
           )}
         />
       )}

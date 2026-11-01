@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FiLogOut } from 'react-icons/fi'
+import { Tooltip } from './Tooltip'
 
 /**
  * 清掉 admin_session cookie 并跳回登录页。7 天免登录靠的是浏览器带着这个 cookie，
@@ -39,18 +40,9 @@ export function LogoutButton() {
       >
         <FiLogOut className="h-4 w-4" />
       </button>
-      <div
-        className={`
-          absolute top-full mt-2 px-3 py-1.5 rounded-lg
-          bg-zinc-900/95 border border-zinc-800/60 backdrop-blur-lg
-          text-[11px] font-medium text-zinc-200 whitespace-nowrap
-          transition-all duration-200 ease-out pointer-events-none z-50
-          ${show && !loading ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}
-        `}
-      >
+      <Tooltip visible={show && !loading} placement="bottom">
         退出登录
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-b-4 border-b-zinc-900/95" />
-      </div>
+      </Tooltip>
     </div>
   )
 }

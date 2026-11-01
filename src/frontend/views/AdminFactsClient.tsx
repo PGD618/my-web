@@ -1,75 +1,43 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { FiDatabase, FiTrash2, FiArrowRight } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
+import { AdminCard } from '@/frontend/components/admin/AdminCard'
 import { ConfirmDialog } from '@/frontend/components/admin/ConfirmDialog'
+import { ErrorBanner } from '@/frontend/components/admin/ErrorBanner'
+import { LoadingText } from '@/frontend/components/admin/LoadingText'
+import { Tag } from '@/frontend/components/admin/Tag'
+import { useAdminMutation, useAdminResource } from '@/frontend/hooks/useAdminResource'
 import { isExperience, type NarrativeEntry } from '@/lib/autobiography'
 import type { CategoryFact, FactCategory, FactCategoriesResponse, ReferencedFact } from '@/lib/adminTypes'
 
 export function AdminFactsClient() {
-  const [categories, setCategories] = useState<FactCategory[]>([])
-  const [loading, setLoading] = useState(true)
-  const [processingId, setProcessingId] = useState<string | null>(null)
-  const [error, setError] = useState<Record<string, string>>({})
+  const { data, loading, error, reload } = useAdminResource<FactCategory[]>(
+    '/api/admin/fact-categories',
+    (json: FactCategoriesResponse) => json.categories ?? []
+  )
+  const { processingId, errors, run } = useAdminMutation()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-
-  async function load() {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/admin/fact-categories')
-      if (!res.ok) {
-        setError({ global: `加载失败（${res.status}）` })
-        return
-      }
-      const data: FactCategoriesResponse = await res.json()
-      setCategories(data.categories ?? [])
-    } catch {
-      setError({ global: '加载失败' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    load()
-  }, [])
+  const categories = data ?? []
 
   async function handleDelete(factId: string) {
-    setProcessingId(factId)
-    setError(prev => {
-      const next = { ...prev }
-      delete next[factId]
-      return next
+    await run(factId, () => fetch(`/api/admin/confirmed-facts/${factId}`, { method: 'DELETE' }), {
+      onError: async res => {
+        if (res.status === 409) {
+          const data = await res.json()
+          const referencedBy: ReferencedFact[] = data.detail?.referenced_by ?? []
+          return `被 ${referencedBy.length} 条记录引用，无法删除：${referencedBy.map(f => f.content).join('；')}`
+        }
+        return `删除失败（${res.status}）`
+      },
+      networkError: '删除失败，请重试',
+      onSuccess: () => reload(),
     })
-
-    try {
-      const res = await fetch(`/api/admin/confirmed-facts/${factId}`, { method: 'DELETE' })
-      if (res.status === 409) {
-        const data = await res.json()
-        const referencedBy: ReferencedFact[] = data.detail?.referenced_by ?? []
-        setError(prev => ({
-          ...prev,
-          [factId]: `被 ${referencedBy.length} 条记录引用，无法删除：${referencedBy
-            .map(f => f.content)
-            .join('；')}`,
-        }))
-        return
-      }
-      if (!res.ok) {
-        setError(prev => ({ ...prev, [factId]: `删除失败（${res.status}）` }))
-        return
-      }
-      await load()
-    } catch {
-      setError(prev => ({ ...prev, [factId]: '删除失败，请重试' }))
-    } finally {
-      setProcessingId(null)
-      setConfirmDeleteId(null)
-    }
+    setConfirmDeleteId(null)
   }
 
   function renderEntries(entries: NarrativeEntry[]): React.ReactNode {
@@ -81,16 +49,8 @@ export function AdminFactsClient() {
       <div className="space-y-2">
         {entries.map(entry => (
           <div key={entry.id} className="flex items-start gap-2">
-            {isExperience(entry) && (
-              <span className="mt-0.5 inline-block px-1.5 py-0.5 text-[10px] bg-emerald-700/40 text-emerald-400 rounded">
-                经历
-              </span>
-            )}
-            {!entry.is_current && (
-              <span className="mt-0.5 inline-block px-1.5 py-0.5 text-[10px] bg-zinc-700/40 text-zinc-400 rounded">
-                以前认为
-              </span>
-            )}
+            {isExperience(entry) && <Tag tone="experience">经历</Tag>}
+            {!entry.is_current && <Tag tone="muted">以前认为</Tag>}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-zinc-300">{entry.text}</p>
               {entry.occurred_at && (
@@ -115,9 +75,7 @@ export function AdminFactsClient() {
       <div className="space-y-2">
         {facts.map(fact => (
           <div key={fact.id} className="flex items-start gap-2">
-            <span className="mt-0.5 inline-block px-1.5 py-0.5 text-[10px] bg-blue-700/40 text-blue-400 rounded">
-              事实
-            </span>
+            <Tag tone="fact">事实</Tag>
             <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
               <p className="text-sm text-zinc-300">{fact.text}</p>
               <ActionButton
@@ -128,9 +86,7 @@ export function AdminFactsClient() {
                 onClick={() => setConfirmDeleteId(fact.id)}
               />
             </div>
-            {error[fact.id] && (
-              <p className="mt-3 text-xs font-light tracking-wide text-red-400">{error[fact.id]}</p>
-            )}
+            <ErrorBanner message={errors[fact.id]} className="mt-3" />
           </div>
         ))}
       </div>
@@ -161,20 +117,21 @@ export function AdminFactsClient() {
         </Link>
       </div>
 
-      {error.global && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error.global}</p>}
+      <ErrorBanner message={error} />
       {loading ? (
-        <p className="text-xs font-light tracking-wide text-zinc-500">加载中…</p>
+        <LoadingText />
       ) : categories.length === 0 ? (
-        <p className="text-xs font-light tracking-wide text-zinc-500">暂无数据</p>
+        <LoadingText>暂无数据</LoadingText>
       ) : (
         <ReviewList
           items={categories}
+          getKey={category => category.category}
           emptyLabel="暂无类别"
           renderItem={category => {
             const totalItems = category.entries.length + category.facts.length
 
             return (
-              <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4 space-y-4">
+              <AdminCard className="p-4 space-y-4">
                 {/* 类别标题 - 醒目 */}
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -202,7 +159,7 @@ export function AdminFactsClient() {
                 {totalItems === 0 && (
                   <p className="text-xs text-zinc-500">此类别暂无内容</p>
                 )}
-              </div>
+              </AdminCard>
             )
           }}
         />

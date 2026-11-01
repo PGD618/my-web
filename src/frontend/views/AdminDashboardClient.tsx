@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { FiInbox, FiAlertTriangle, FiDatabase, FiArrowRight, FiUser, FiFileText } from 'react-icons/fi'
 import { LogoutButton } from '@/frontend/components/admin/LogoutButton'
+import { ErrorBanner } from '@/frontend/components/admin/ErrorBanner'
+import { fetchAdminJson } from '@/frontend/hooks/useAdminResource'
 
 interface Entry {
   href: string
@@ -59,20 +61,17 @@ export function AdminDashboardClient() {
   const router = useRouter()
 
   useEffect(() => {
+    // 多个计数接口并行请求，所以不用 useAdminResource（单 url），但 401/403 跳转和 res.ok 判断共用 fetchAdminJson
     ENTRIES.forEach(entry => {
       if (!entry.countEndpoint) return
-      fetch(entry.countEndpoint)
-        .then(async res => {
-          if (res.status === 401 || res.status === 403) {
-            router.push('/admin/login')
-            return
+      fetchAdminJson(entry.countEndpoint, router)
+        .then(result => {
+          if (result.kind === 'http') {
+            setError(`部分计数加载失败（${result.status}）`)
+          } else if (result.kind === 'ok') {
+            const data = result.json as { items?: unknown[] }
+            setCounts(prev => ({ ...prev, [entry.href]: data.items?.length ?? 0 }))
           }
-          if (!res.ok) {
-            setError(`部分计数加载失败（${res.status}）`)
-            return
-          }
-          const data = await res.json()
-          setCounts(prev => ({ ...prev, [entry.href]: data.items?.length ?? 0 }))
         })
         .catch(() => setError('部分计数加载失败'))
     })
@@ -94,7 +93,7 @@ export function AdminDashboardClient() {
           <LogoutButton />
         </div>
 
-        {error && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error}</p>}
+        <ErrorBanner message={error} />
 
         <div className="grid gap-4 sm:grid-cols-3">
           {ENTRIES.map(entry => {

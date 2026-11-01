@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { FiAlertTriangle, FiCheck } from 'react-icons/fi'
 import { AdminPageShell } from '@/frontend/components/admin/AdminPageShell'
 import { ReviewList } from '@/frontend/components/admin/ReviewList'
 import { ActionButton } from '@/frontend/components/admin/ActionButton'
+import { AdminCard } from '@/frontend/components/admin/AdminCard'
+import { ErrorBanner } from '@/frontend/components/admin/ErrorBanner'
+import { LoadingText } from '@/frontend/components/admin/LoadingText'
+import { useAdminMutation, useAdminResource } from '@/frontend/hooks/useAdminResource'
 import type { ConfirmedFact, DisputePair } from '@/lib/adminTypes'
 
 function pairUpDisputes(items: ConfirmedFact[]): DisputePair[] {
@@ -25,73 +27,47 @@ function pairUpDisputes(items: ConfirmedFact[]): DisputePair[] {
   return pairs
 }
 
+const pairKey = (pair: DisputePair) => `${pair.a.id}:${pair.b.id}`
+
 export function AdminDisputedFactsClient() {
-  const [pairs, setPairs] = useState<DisputePair[]>([])
-  const [loading, setLoading] = useState(true)
-  const [processingId, setProcessingId] = useState<string | null>(null)
-  const [error, setError] = useState('')
-  const router = useRouter()
+  const { data, setData, loading, error } = useAdminResource<DisputePair[]>(
+    '/api/admin/disputed-facts',
+    json => pairUpDisputes(json.items ?? [])
+  )
+  const { processingId, errors, run } = useAdminMutation()
+  const pairs = data ?? []
 
-  async function load() {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/admin/disputed-facts')
-      if (res.status === 401 || res.status === 403) {
-        router.push('/admin/login')
-        return
+  function resolve(pairId: string, body: { keep_id: string; discard_id: string | null }) {
+    run(
+      pairId,
+      () =>
+        fetch('/api/admin/disputed-facts/resolve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      {
+        errorKey: 'action',
+        onSuccess: () => setData(prev => (prev ?? []).filter(p => pairKey(p) !== pairId)),
       }
-      if (!res.ok) {
-        setError(`加载失败（${res.status}）`)
-        return
-      }
-      const data = await res.json()
-      setPairs(pairUpDisputes(data.items ?? []))
-    } catch {
-      setError('加载失败')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    load()
-  }, [])
-
-  async function resolve(pairId: string, body: { keep_id: string; discard_id: string | null }) {
-    setProcessingId(pairId)
-    setError('')
-    try {
-      const res = await fetch('/api/admin/disputed-facts/resolve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) {
-        setError(`操作失败（${res.status}）`)
-        return
-      }
-      setPairs(prev => prev.filter(p => `${p.a.id}:${p.b.id}` !== pairId))
-    } catch {
-      setError('操作失败，请重试')
-    } finally {
-      setProcessingId(null)
-    }
+    )
   }
 
   return (
     <AdminPageShell icon={FiAlertTriangle} title="待裁决冲突" subtitle="Disputed Facts">
-      {error && <p className="mb-4 text-xs font-light tracking-wide text-red-400">{error}</p>}
+      <ErrorBanner message={errors.action ?? error} />
       {loading ? (
-        <p className="text-xs font-light tracking-wide text-zinc-500">加载中…</p>
+        <LoadingText />
       ) : (
         <ReviewList
           items={pairs}
+          getKey={pairKey}
           emptyLabel="暂无待裁决的冲突"
           renderItem={pair => {
-            const pairId = `${pair.a.id}:${pair.b.id}`
+            const pairId = pairKey(pair)
             const disabled = processingId === pairId
             return (
-              <div className="rounded-[20px] border border-white/10 bg-zinc-950/60 p-4">
+              <AdminCard className="p-4">
                 <div className="mb-4 grid gap-3 sm:grid-cols-2">
                   {[pair.a, pair.b].map(fact => (
                     <div key={fact.id} className="rounded-[16px] border border-white/5 bg-white/5 p-3">
@@ -125,7 +101,7 @@ export function AdminDisputedFactsClient() {
                     onClick={() => resolve(pairId, { keep_id: pair.a.id, discard_id: null })}
                   />
                 </div>
-              </div>
+              </AdminCard>
             )
           }}
         />
