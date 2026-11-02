@@ -5,7 +5,7 @@ import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import rehypeShiki from '@shikijs/rehype'
-import { rehypeCodeMeta } from './src/backend/rehypeCodeMeta'
+import { rehypeCodeMeta } from './src/build/rehypeCodeMeta'
 
 // 辅助函数：将嵌套的 TOC 拍扁，方便前端渲染
 const flattenToc = (items: any[], depth = 2) => {

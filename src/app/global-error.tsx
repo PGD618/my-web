@@ -1,6 +1,6 @@
 'use client'
 
-import { StatusContent, STATUS_PRIMARY_BUTTON } from '@/frontend/components/StatusPage'
+import { StatusContent, STATUS_PRIMARY_BUTTON } from '@/shared/ui/StatusPage'
 
 // global-error 会替换根 layout，必须自带 html/body
 export default function GlobalError({

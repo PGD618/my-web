@@ -6,4 +6,4 @@ export const metadata: Metadata = {
   openGraph: { title: 'Projects', description: '精选项目 — 从 AI Agent 平台到国赛作品。', url: '/projects' },
 }
 
-export { default } from "@/frontend/views/ProjectsPage"
+export { default } from "@/features/projects/ProjectsPage"

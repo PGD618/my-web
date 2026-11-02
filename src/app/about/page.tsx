@@ -6,4 +6,4 @@ export const metadata: Metadata = {
   openGraph: { title: 'About Me', description: '郭金波 — 全栈研发实习生，山西大学大三学生。', url: '/about' },
 }
 
-export { default } from "@/frontend/views/AboutPage"
+export { default } from "@/features/profile/components/AboutPage"

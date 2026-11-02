@@ -6,4 +6,4 @@ export const metadata: Metadata = {
   openGraph: { title: 'Experience', description: '实习经历与技术成长路径记录。', url: '/experience' },
 }
 
-export { default } from "@/frontend/views/ExperiencePage"
+export { default } from "@/features/profile/components/ExperiencePage"

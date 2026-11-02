@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcrypt'
-import { signSessionToken, ADMIN_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from '@/lib/auth'
-import { clearAttempts, getClientKey, isRateLimited, recordFailedAttempt } from '@/lib/rateLimit'
+import { signSessionToken, ADMIN_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from '@/server/auth'
+import { clearAttempts, getClientKey, isRateLimited, recordFailedAttempt } from '@/server/rateLimit'
 
 export async function POST(req: NextRequest) {
   const clientKey = getClientKey(req)

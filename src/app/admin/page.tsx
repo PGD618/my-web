@@ -1,1 +1,1 @@
-export { default } from '@/frontend/views/AdminDashboardPage'
+export { default } from '@/features/admin/components/AdminDashboardPage'

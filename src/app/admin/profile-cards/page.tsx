@@ -1,1 +1,1 @@
-export { default } from '@/frontend/views/AdminProfileCardsPage'
+export { default } from '@/features/admin/components/AdminProfileCardsPage'

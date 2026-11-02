@@ -1,1 +1,1 @@
-export { default } from '@/frontend/views/HomePage'
+export { default } from '@/features/home/components/HomePage'

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
-import { getRole } from '@/lib/auth'
-import { fetchAgent } from '@/lib/agentClient'
-import type { ChatRequest } from '@/components/AIPet/types'
+import { getRole } from '@/server/auth'
+import { fetchAgent } from '@/server/agentClient'
+import type { ChatRequest } from '@/features/ai-pet/components/types'
 
 export async function POST(req: NextRequest) {
   try {

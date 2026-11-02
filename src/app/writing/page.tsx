@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getAllNotes } from '@/backend/notes'
-import { CATEGORIES } from '@/backend/utils'
+import { getAllNotes } from '@/features/notes/notes'
+import { CATEGORIES } from '@/features/notes/utils'
 import { FiArrowRight } from 'react-icons/fi'
 
 export const metadata: Metadata = {

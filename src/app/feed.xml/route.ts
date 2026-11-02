@@ -1,4 +1,4 @@
-import { getAllNotes } from '@/backend/notes'
+import { getAllNotes } from '@/features/notes/notes'
 import RSS from 'rss'
 
 export async function GET() {

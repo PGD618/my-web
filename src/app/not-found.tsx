@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { FiHome, FiEdit3 } from 'react-icons/fi'
-import { StatusPage, STATUS_PRIMARY_BUTTON, STATUS_SECONDARY_BUTTON } from '@/frontend/components/StatusPage'
+import { StatusPage, STATUS_PRIMARY_BUTTON, STATUS_SECONDARY_BUTTON } from '@/shared/ui/StatusPage'
 
 export default function NotFound() {
   return (

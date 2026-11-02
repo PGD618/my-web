@@ -1,1 +1,1 @@
-export { default } from '@/frontend/views/AdminAutobiographyPage'
+export { default } from '@/features/admin/components/AdminAutobiographyPage'

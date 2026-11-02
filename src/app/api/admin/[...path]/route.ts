@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { proxyToAgent } from '@/lib/adminProxy'
-import { matchAdminRoute } from '@/lib/adminRoutes'
+import { proxyToAgent } from '@/server/adminProxy'
+import { matchAdminRoute } from '@/features/admin/adminRoutes'
 
 // 所有 /api/admin/* 代理共用这一个入口，允许的路径和方法见 lib/adminRoutes.ts。
 // login、logout 是静态路由，优先级高于这里的 catch-all，不经过白名单。

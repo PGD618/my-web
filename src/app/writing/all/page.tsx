@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getAllNotes } from '@/backend/notes'
+import { getAllNotes } from '@/features/notes/notes'
 import { FiFileText, FiClock, FiBookOpen, FiArrowRight, FiHash } from 'react-icons/fi'
 
 export const metadata: Metadata = {

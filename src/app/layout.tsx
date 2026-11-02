@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@/frontend/styles/globals.css";
+import "@/shared/styles/globals.css";
 import { site } from "@/data/site";
 
 export const metadata: Metadata = {
@@ -35,4 +35,4 @@ export const metadata: Metadata = {
   },
 };
 
-export { default } from "@/frontend/views/RootLayoutView";
+export { default } from "@/shared/layout/RootLayoutView";

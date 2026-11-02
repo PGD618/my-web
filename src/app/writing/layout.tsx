@@ -1,1 +1,1 @@
-export { default } from "@/frontend/views/WritingLayoutView";
+export { default } from "@/features/notes/components/WritingLayoutView";

@@ -1,1 +1,1 @@
-export { default, generateStaticParams } from '@/frontend/views/TagNotesView'
+export { default, generateStaticParams } from '@/features/notes/components/TagNotesView'

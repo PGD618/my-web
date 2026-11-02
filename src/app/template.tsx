@@ -1,1 +1,1 @@
-export { default } from '@/frontend/views/Template'
+export { default } from '@/shared/layout/Template'

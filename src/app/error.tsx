@@ -1,6 +1,6 @@
 'use client'
 
-import { StatusPage, STATUS_PRIMARY_BUTTON } from '@/frontend/components/StatusPage'
+import { StatusPage, STATUS_PRIMARY_BUTTON } from '@/shared/ui/StatusPage'
 
 export default function Error({
   error,

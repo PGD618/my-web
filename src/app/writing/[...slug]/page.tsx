@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getNote, getBacklinks, getGraphData } from '@/backend/notes'
-import { categorySlugToName, resolveNotePath } from '@/backend/utils'
-import NotePageView from '@/frontend/views/NotePageView'
-import WritingWorkspace from '@/frontend/views/WritingWorkspace'
+import { getNote, getBacklinks, getGraphData } from '@/features/notes/notes'
+import { categorySlugToName, resolveNotePath } from '@/features/notes/utils'
+import NotePageView from '@/features/notes/components/NotePageView'
+import WritingWorkspace from '@/features/notes/components/WritingWorkspace'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
   try {

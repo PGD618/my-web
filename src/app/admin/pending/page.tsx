@@ -1,1 +1,1 @@
-export { default } from '@/frontend/views/AdminPendingObservationsPage'
+export { default } from '@/features/admin/components/AdminPendingObservationsPage'

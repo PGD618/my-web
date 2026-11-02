@@ -1,1 +1,1 @@
-export { default } from '@/frontend/views/TagListView'
+export { default } from '@/features/notes/components/TagListView'
