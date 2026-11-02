@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
 import "@/frontend/styles/globals.css";
+import { site } from "@/data/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://pgdream.cn'),
+  metadataBase: new URL(site.url),
   title: {
-    default: 'PGD618 | Digital Garden',
+    default: site.title,
     template: '%s | PGD618',
   },
-  description: 'Sophomore Full-stack Developer. 数字花园 — 记录技术、思考与成长的碎片。',
+  description: site.description,
   openGraph: {
     type: 'website',
     locale: 'zh_CN',
-    siteName: 'PGD618 Digital Garden',
-    title: 'PGD618 | Digital Garden',
-    description: 'Sophomore Full-stack Developer. 数字花园 — 记录技术、思考与成长的碎片。',
+    siteName: site.siteName,
+    title: site.title,
+    description: site.description,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PGD618 | Digital Garden',
-    description: 'Sophomore Full-stack Developer. 数字花园 — 记录技术、思考与成长的碎片。',
+    title: site.title,
+    description: site.description,
   },
   robots: {
     index: true,
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   alternates: {
     types: {
       'application/rss+xml': [
-        { url: '/feed.xml', title: 'PGD618 Digital Garden RSS Feed' }
+        { url: '/feed.xml', title: `${site.siteName} RSS Feed` }
       ],
     },
   },
