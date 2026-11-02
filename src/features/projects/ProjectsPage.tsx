@@ -6,7 +6,6 @@ import { staggerContainer, fadeUpItem } from '@/shared/motion/motion'
 import { PageGlow } from '@/shared/ui/PageGlow'
 import { FiCode, FiLayers, FiBriefcase } from 'react-icons/fi'
 import { projects, type Project } from '@/data/projects'
-import { ProjectBadge } from '@/features/projects/components/ProjectBadge'
 import { ProjectCard } from '@/features/projects/components/ProjectCard'
 import { ProjectDetailSheet } from '@/features/projects/components/ProjectDetailSheet'
 
