@@ -10,7 +10,7 @@ import { ConfirmDialog } from '@/features/admin/components/ConfirmDialog'
 import { ErrorBanner } from '@/features/admin/components/ErrorBanner'
 import { LoadingText } from '@/features/admin/components/LoadingText'
 import { useAdminMutation, useAdminResource } from '@/features/admin/hooks/useAdminResource'
-import type { ProfileCard, ProfileCardGroup } from '@/features/admin/adminTypes'
+import type { ProfileCard, ProfileCardGroup } from '@/features/admin/types'
 
 function groupByKey(items: ProfileCard[]): ProfileCardGroup[] {
   const groups = new Map<string, ProfileCard[]>()

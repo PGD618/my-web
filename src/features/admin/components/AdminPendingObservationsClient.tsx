@@ -8,7 +8,7 @@ import { AdminCard } from '@/features/admin/components/AdminCard'
 import { ErrorBanner } from '@/features/admin/components/ErrorBanner'
 import { LoadingText } from '@/features/admin/components/LoadingText'
 import { useAdminMutation, useAdminResource } from '@/features/admin/hooks/useAdminResource'
-import type { PendingObservation } from '@/features/admin/adminTypes'
+import type { PendingObservation } from '@/features/admin/types'
 
 export function AdminPendingObservationsClient() {
   const { data, setData, loading, error } = useAdminResource<PendingObservation[]>(

@@ -8,7 +8,7 @@ import { AdminCard } from '@/features/admin/components/AdminCard'
 import { ErrorBanner } from '@/features/admin/components/ErrorBanner'
 import { LoadingText } from '@/features/admin/components/LoadingText'
 import { useAdminMutation, useAdminResource } from '@/features/admin/hooks/useAdminResource'
-import type { ConfirmedFact, DisputePair } from '@/features/admin/adminTypes'
+import type { ConfirmedFact, DisputePair } from '@/features/admin/types'
 
 function pairUpDisputes(items: ConfirmedFact[]): DisputePair[] {
   const byId = new Map(items.map(item => [item.id, item]))

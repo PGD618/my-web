@@ -13,7 +13,7 @@ import { LoadingText } from '@/features/admin/components/LoadingText'
 import { Tag } from '@/features/admin/components/Tag'
 import { useAdminMutation, useAdminResource } from '@/features/admin/hooks/useAdminResource'
 import { isExperience, type NarrativeEntry } from '@/features/admin/autobiography'
-import type { CategoryFact, FactCategory, FactCategoriesResponse, ReferencedFact } from '@/features/admin/adminTypes'
+import type { CategoryFact, FactCategory, FactCategoriesResponse, ReferencedFact } from '@/features/admin/types'
 
 export function AdminFactsClient() {
   const { data, loading, error, reload } = useAdminResource<FactCategory[]>(

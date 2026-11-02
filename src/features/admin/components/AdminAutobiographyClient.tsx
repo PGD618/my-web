@@ -10,7 +10,7 @@ import { LoadingText } from '@/features/admin/components/LoadingText'
 import { Tag } from '@/features/admin/components/Tag'
 import { useAdminMutation, useAdminResource } from '@/features/admin/hooks/useAdminResource'
 import { cleanNarrativeText, generateStatsText, sortSections, isExperience, type AutobiographyData } from '@/features/admin/autobiography'
-import type { AutobiographyRebuildResult } from '@/features/admin/adminTypes'
+import type { AutobiographyRebuildResult } from '@/features/admin/types'
 
 export function AdminAutobiographyClient() {
   // 加载失败才整页显示错误；重建失败只在正文上方内联提示，正文保留
