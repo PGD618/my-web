@@ -23,6 +23,7 @@ export const ADMIN_ROUTES: readonly AdminRoute[] = [
   { method: 'DELETE', pattern: 'profile-cards/:id' },
   { method: 'GET', pattern: 'autobiography' },
   { method: 'POST', pattern: 'autobiography/rebuild' },
+  { method: 'GET', pattern: 'autobiography/rebuild/:id' },
 ]
 
 function safeDecode(segment: string): string {

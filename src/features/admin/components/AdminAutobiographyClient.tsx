@@ -10,7 +10,10 @@ import { LoadingText } from '@/features/admin/components/LoadingText'
 import { Tag } from '@/features/admin/components/Tag'
 import { useAdminMutation, useAdminResource } from '@/features/admin/hooks/useAdminResource'
 import { cleanNarrativeText, generateStatsText, sortSections, isExperience, type AutobiographyData } from '@/features/admin/autobiography'
-import type { AutobiographyRebuildResult } from '@/features/admin/types'
+import type { AutobiographyRebuildResult, AutobiographyRebuildStatus } from '@/features/admin/types'
+
+// 重建在后台跑，几分钟；每 3 秒问一次状态
+const REBUILD_POLL_INTERVAL_MS = 3000
 
 export function AdminAutobiographyClient() {
   // 加载失败才整页显示错误；重建失败只在正文上方内联提示，正文保留
@@ -22,41 +25,100 @@ export function AdminAutobiographyClient() {
       networkErrorMessage: '网络错误',
     }
   )
-  const { processingId, errors, run } = useAdminMutation()
-  const rebuilding = processingId === 'rebuild'
+  const { processingId, errors, setError, run } = useAdminMutation()
   const actionError = errors.rebuild
   const [expandedUnnarrated, setExpandedUnnarrated] = useState(false)
   const [rebuildResult, setRebuildResult] = useState<AutobiographyRebuildResult | null>(null)
+  // 轮询期间 processingId 已经清空，用这个单独标记，避免按钮重新可点、重复启动
+  const [rebuildPolling, setRebuildPolling] = useState(false)
+  const rebuilding = processingId === 'rebuild' || rebuildPolling
   const [showConfirm, setShowConfirm] = useState(false)
-  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(true)
+
+  function stopPolling() {
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current)
+      pollTimerRef.current = null
+    }
+  }
+
+  function pollRebuild(jobId: string) {
+    pollTimerRef.current = setTimeout(async () => {
+      pollTimerRef.current = null
+      if (!mountedRef.current) return
+      let status: AutobiographyRebuildStatus
+      try {
+        const res = await fetch(`/api/admin/autobiography/rebuild/${jobId}`)
+        if (res.status === 404) {
+          // 任务查不到就不会再有结果，停下来报错，不无限轮询
+          setRebuildPolling(false)
+          setError('rebuild', '重建状态查询失败，请刷新页面确认结果')
+          return
+        }
+        if (!res.ok) {
+          // 其他失败（网络抖动、代理超时）不中断：重建在后台继续，下一轮再问
+          pollRebuild(jobId)
+          return
+        }
+        status = await res.json()
+      } catch {
+        pollRebuild(jobId)
+        return
+      }
+      if (!mountedRef.current) return
+      if (status.status === 'running') {
+        pollRebuild(jobId)
+        return
+      }
+      setRebuildPolling(false)
+      if (status.status === 'failed') {
+        setError('rebuild', `重建失败：${status.error || '请查看服务器日志'}`)
+        return
+      }
+      const result = status.result
+      if (!result || result.chapters_written === 0) {
+        setError('rebuild', '重建没有写入任何章节，请查看服务器日志')
+        return
+      }
+      setRebuildResult(result)
+      reload()
+      setTimeout(() => setRebuildResult(null), 1500)
+    }, REBUILD_POLL_INTERVAL_MS)
+  }
+
+  function startPolling(jobId: string) {
+    setRebuildPolling(true)
+    setError('rebuild', null)
+    pollRebuild(jobId)
+  }
 
   async function handleRebuild() {
+    // 重建在后台跑（几分钟），POST 只负责启动并返回 job_id，进度靠轮询
     await run('rebuild', () => fetch('/api/admin/autobiography/rebuild', { method: 'POST' }), {
       onError: async res => {
         const data = await res.json().catch(() => ({}))
-        return `重建失败：${data.detail || res.statusText}`
+        if (res.status === 409 && data.job_id) {
+          // 已有重建在跑：接上它，不报错
+          startPolling(data.job_id)
+          return ''
+        }
+        return `重建失败：${data.error || res.statusText}`
       },
       networkError: '网络错误',
       onSuccess: async res => {
-        const result: AutobiographyRebuildResult = await res.json()
-        if (result.chapters_written === 0) {
-          return '重建没有写入任何章节，请查看服务器日志'
-        }
-        setRebuildResult(result)
-        if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
-        reloadTimerRef.current = setTimeout(() => {
-          reloadTimerRef.current = null
-          reload()
-          setRebuildResult(null)
-        }, 1500)
+        const { job_id: jobId } = await res.json()
+        startPolling(jobId)
       },
     })
     setShowConfirm(false)
   }
 
   useEffect(() => {
+    mountedRef.current = true
     return () => {
-      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
+      mountedRef.current = false
+      stopPolling()
     }
   }, [])
 
@@ -97,7 +159,7 @@ export function AdminAutobiographyClient() {
         <ConfirmDialog
           isOpen={showConfirm}
           title="重建自传"
-          message="会用当前全部条目重新生成整篇自传，锁定的段落会保留。重建需要一两分钟。"
+          message="会用当前全部条目重新生成整篇自传，锁定的段落会保留。重建在后台进行，通常需要几分钟，可以关掉页面。"
           cancelLabel="取消"
           confirmLabel="确认重建"
           isLoading={rebuilding}
@@ -129,7 +191,7 @@ export function AdminAutobiographyClient() {
       <ConfirmDialog
         isOpen={showConfirm}
         title="重建自传"
-        message="会用当前全部条目重新生成整篇自传，锁定的段落会保留。重建需要一两分钟。"
+        message="会用当前全部条目重新生成整篇自传，锁定的段落会保留。重建在后台进行，通常需要几分钟，可以关掉页面。"
         cancelLabel="取消"
         confirmLabel="确认重建"
         isLoading={rebuilding}
@@ -147,6 +209,12 @@ export function AdminAutobiographyClient() {
       </div>
 
       {actionErrorBlock}
+
+      {rebuildPolling && (
+        <div className="mb-6 rounded-lg border border-blue-400/20 bg-blue-500/5 p-4">
+          <p className="text-sm text-blue-300">重建进行中，通常需要几分钟，可以关掉页面</p>
+        </div>
+      )}
 
       {rebuildResult && (
         <div className="mb-6 rounded-lg border border-blue-400/20 bg-blue-500/5 p-4">

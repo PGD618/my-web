@@ -77,6 +77,20 @@ export interface ProfileCardGroup {
 
 // ─── POST /admin/autobiography/rebuild ───
 
+/** POST 立即返回：重建在后台跑，进度用 GET /admin/autobiography/rebuild/:id 轮询 */
+export interface AutobiographyRebuildJob {
+  job_id: string
+  status: 'running'
+}
+
+/** GET 轮询结果。succeeded 时带 result，failed 时带 error */
+export interface AutobiographyRebuildStatus {
+  job_id: string
+  status: 'running' | 'succeeded' | 'failed'
+  result: AutobiographyRebuildResult | null
+  error: string | null
+}
+
 export interface AutobiographyRebuildResult {
   chapters_planned: number
   chapters_written: number

@@ -22,7 +22,7 @@ function getAgentConfig(): { url: string; serviceToken: string } {
  */
 export async function fetchAgent(
   path: string,
-  init: { method?: string; body?: string; search?: string } = {}
+  init: { method?: string; body?: string; search?: string; timeoutMs?: number } = {}
 ): Promise<Response> {
   const { url, serviceToken } = getAgentConfig()
   const target = new URL(`${url}${path}`)
@@ -35,5 +35,7 @@ export async function fetchAgent(
       'X-Service-Token': serviceToken,
     },
     body: init.body,
+    // 不设超时时，agent 或中间的反向代理卡住会让整个请求挂到平台超时，前端只能看到空错误
+    signal: init.timeoutMs ? AbortSignal.timeout(init.timeoutMs) : undefined,
   })
 }

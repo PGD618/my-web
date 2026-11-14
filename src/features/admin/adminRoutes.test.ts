@@ -13,6 +13,9 @@ describe('matchAdminRoute', () => {
   it('静态路径映射到 /admin 下的同名路径', () => {
     expect(matchAdminRoute('GET', ['fact-categories'])?.agentPath).toBe('/admin/fact-categories')
     expect(matchAdminRoute('POST', ['autobiography', 'rebuild'])?.agentPath).toBe('/admin/autobiography/rebuild')
+    expect(matchAdminRoute('GET', ['autobiography', 'rebuild', 'job1'])?.agentPath).toBe(
+      '/admin/autobiography/rebuild/job1'
+    )
   })
 
   it('带 id 的路径对 id 做 encodeURIComponent', () => {
@@ -27,6 +30,7 @@ describe('matchAdminRoute', () => {
   it('方法不对返回 null', () => {
     expect(matchAdminRoute('POST', ['fact-categories'])).toBeNull()
     expect(matchAdminRoute('GET', ['autobiography', 'rebuild'])).toBeNull()
+    expect(matchAdminRoute('POST', ['autobiography', 'rebuild', 'job1'])).toBeNull()
     expect(matchAdminRoute('PUT', ['profile-cards', 'x'])).toBeNull()
   })
 

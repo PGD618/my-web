@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getRole } from '@/server/auth'
 import { fetchAgent } from '@/server/agentClient'
 
+const ADMIN_PROXY_TIMEOUT_MS = 30_000
+
 /**
  * 转发到 agent 的 /admin/* 接口，先在这里（my-web 服务端）校验 owner，不通过直接拒绝，
  * 不转发到 agent——agent 侧的 /admin/* 只校验 X-Service-Token，不重复校验角色，
@@ -25,6 +27,8 @@ export async function proxyToAgent(
       method: init?.method,
       body: init?.body,
       search: req.nextUrl.search,
+      // admin 接口都是短请求（重建已改为后台任务），超时后明确报错，不让前端无限等
+      timeoutMs: ADMIN_PROXY_TIMEOUT_MS,
     })
     const { status } = agentResponse
 
